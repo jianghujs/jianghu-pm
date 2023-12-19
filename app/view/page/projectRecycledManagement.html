@@ -223,15 +223,14 @@
 
       // ---------- 删除项目 >>>>>>>>>>>>> ----------
       async deleteProject({ item }) {
-        const { id } = item;
+        const { projectId } = item;
         await window.vtoast.loading("删除中...");
         await window.jianghuAxios({
           data: {
             appData: {
-              pageId: 'projectManagement',
-              actionId: 'deleteItem',
-              actionData: {},
-              where: { id: id }
+              pageId: 'projectRecycledManagement',
+              actionId: 'deleteProject',
+              actionData: { projectId },
             }
           }
         });
