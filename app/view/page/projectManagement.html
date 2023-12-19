@@ -63,12 +63,21 @@
                               <span class="ml-2">操作</span>
                             </template>
                             <!--表格行操作按钮-->
-                            <template v-slot:item.operationAt="{ item }">
-                              {{ item.operationAt && dayjs(item.operationAt).format('YYYY-MM-DD HH:mm:ss') }}
+                            <template v-slot:item.isMark="{ item }">
+                              <a @click="doUiAction('starProject', { item })">
+                                <v-icon v-if="item.isMark === '是'" color="#ffab00">mdi-star</v-icon>
+                                <v-icon v-else>mdi-star-outline</v-icon>
+                              </a>
                             </template>
+                            <template v-slot:item.projectName="{ item }">
+                              <a @click="doUiAction('redirect', { item, button: {path: 'taskManagementOfOneProject'} })">{{ item.projectName }}</a>
+                            </template>
+                            <template v-slot:item.projectEndAt="{ item }">
+                              <v-chip v-if="item.projectEndAt" small>{{ item.projectEndAt }}截止</v-chip>
+                            </template>
+                            
                             <template v-slot:item.action="{ item }">
                               <v-btn v-for="tableButton of tableButtonList" :color="tableButton.color" outlined x-small class="elevation-0 mr-2" @click="doUiAction(tableButton.action, {item, button: tableButton})">{{ tableButton.text }}</v-btn>
-
                               <v-menu offset-y>
                                 <template v-slot:activator="{ on, attrs }">
                                   <v-btn color="grey" x-small outlined v-bind="attrs" v-on="on">
@@ -137,11 +146,9 @@
                                 <span class="jh-input-label">项目开始时间</span>
                                 <!-- 时间选择 -->
                                 <v-menu 
-                                  ref="projectStartAtMenu" 
                                   v-model="isProjectStartAtMenuShown" 
                                   :close-on-content-click="false"
                                   :nudge-right="40" 
-                                  :return-value.sync="addItem.projectStartAt" 
                                   transition="scale-transition" 
                                   offset-y 
                                   min-width="auto"
@@ -158,25 +165,18 @@
                                       v-on="on"
                                     ></v-text-field>
                                   </template>
-                                  <v-date-picker v-model="addItem.projectStartAt" no-title scrollable @change="(evnet)=> {console.log(event)}">
-                                    <v-spacer></v-spacer>
-                                    <v-btn text color="primary" @click="isProjectStartAtMenuShown = false">取消</v-btn>
-                                    <v-btn text color="primary" @click="$refs.projectStartAtMenu.save(addItem.projectStartAt)">确定</v-btn>
-                                  </v-date-picker>
+                                  <v-date-picker v-model="addItem.projectStartAt" no-title scrollable></v-date-picker>
                                 </v-menu>
                               </v-col>
                               
                                
                               <v-col cols="12" sm="12" md="4">
                                 <span class="jh-input-label">项目截止时间</span>
-                                <v-menu :close-on-content-click="false" ref="projectEndAtMenu" v-model="isProjectEndAtMenuShown" :nudge-right="40" :return-value.sync="addItem.projectEndAt" transition="scale-transition" offset-y min-width="auto">
+                                <v-menu :close-on-content-click="false" v-model="isProjectEndAtMenuShown" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
                                   <template v-slot:activator="{ on, attrs }">
                                     <v-text-field append-icon="mdi-calendar" class="jh-v-input" dense single-line filled v-model="addItem.projectEndAt" v-bind="attrs" v-on="on"></v-text-field>
                                   </template>
                                   <v-date-picker v-model="addItem.projectEndAt" no-title scrollable>
-                                    <v-spacer></v-spacer>
-                                    <v-btn text color="primary" @click="isProjectEndAtMenuShown = false">取消</v-btn>
-                                    <v-btn text color="primary" @click="$refs.projectEndAtMenu.save(addItem.projectEndAt)">确定</v-btn>
                                   </v-date-picker>
                                 </v-menu>
                               </v-col>
@@ -191,8 +191,6 @@
                                 <span class="jh-input-label">项目成员列表</span>
                                 <v-autocomplete multiple :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense single-line filled v-model="addItem.projectMemberIdList"></v-autocomplete>
                               </v-col>
-                               
-                              
                                
                                
                             </v-row>
@@ -239,28 +237,23 @@
                               <v-col cols="12" sm="12" md="4">
                                 <span class="jh-input-label">项目开始时间</span>
                                 <!-- 时间选择 -->
-                                <v-menu ref="projectStartAtMenu" v-model="isProjectStartAtMenuShown" :close-on-content-click="false" :nudge-right="40" :return-value.sync="editItem.projectStartAt" transition="scale-transition" offset-y min-width="auto">
+                                <v-menu :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
                                   <template v-slot:activator="{ on, attrs }">
                                     <v-text-field append-icon="mdi-calendar" class="jh-v-input" dense single-line filled v-model="editItem.projectStartAt" v-bind="attrs" v-on="on"></v-text-field>
                                   </template>
                                   <v-date-picker v-model="editItem.projectStartAt" no-title scrollable>
-                                    <v-spacer></v-spacer>
-                                    <v-btn text color="primary" @click="isProjectStartAtMenuShown = false">取消</v-btn>
-                                    <v-btn text color="primary" @click="$refs.projectStartAtMenu.save(editItem.projectStartAt)">确定</v-btn>
                                   </v-date-picker>
                                 </v-menu>
                               </v-col>
                                
                               <v-col cols="12" sm="12" md="4">
                                 <span class="jh-input-label">项目截止时间</span>
-                                <v-menu ref="projectEndAtMenu" v-model="isProjectEndAtMenuShown" :close-on-content-click="false" :nudge-right="40" :return-value.sync="editItem.projectEndAt" transition="scale-transition" offset-y min-width="auto">
+                                <v-menu :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
                                   <template v-slot:activator="{ on, attrs }">
                                     <v-text-field append-icon="mdi-calendar" class="jh-v-input" dense single-line filled v-model="editItem.projectEndAt" v-bind="attrs" v-on="on"></v-text-field>
                                   </template>
                                   <v-date-picker v-model="editItem.projectEndAt" no-title scrollable>
-                                    <v-spacer></v-spacer>
-                                    <v-btn text color="primary" @click="isProjectEndAtMenuShown = false">取消</v-btn>
-                                    <v-btn text color="primary" @click="$refs.projectEndAtMenu.save(editItem.projectEndAt)">确定</v-btn>
+
                                   </v-date-picker>
                                 </v-menu>
                               </v-col>
@@ -358,6 +351,7 @@
       isTableLoading: true,
       tableDataFromBackend: [],
       headers: [
+        { text: "", value: "isMark", width: 0 },
         { text: "项目名称", value: "projectName", width: 120 },
         { text: "截止时间", value: "projectEndAt", width: 120 },
         { text: "创建时间", value: "projectCreateAt", width: 120 },
@@ -371,7 +365,6 @@
       addItem: {},
       tableButtonList: [
         { text: '修改', buttonType: 'edit', color: 'success', action: 'startUpdateItem' },
-        { text: '任务', buttonType: 'path', color: 'warning', path: 'taskManagementOfOneProject', action: 'redirect' },
       ],
 
       isProjectEndAtMenuShown: false,
@@ -459,6 +452,9 @@
             await this.archiveProject(uiActionData);
             await this.refreshTableData();
             break;
+          case 'starProject':
+            await this.starProject(uiActionData);
+            break;
           default:
             console.error("[doUiAction] uiActionId not find", { uiActionId });
             break;
@@ -488,7 +484,7 @@
 
         // 分组构建，合并rows里的projectGroup
         const projectGroup = _.groupBy(rows, 'projectGroup');
-        const projectGroupList = Object.keys(projectGroup);
+        let projectGroupList = Object.keys(projectGroup);
         this.constantObj.projectGroup = this.constantObj.projectGroup.concat(projectGroupList.map(item => ({ text: item, value: item })));
 
         rows.forEach(row => {
@@ -706,10 +702,34 @@
         await window.vtoast.success("归档成功");
       },
       // ---------- <<<<<<<<<<<<< 归档 ----------
+
+      // ---------- 加星标 >>>>>>>>>>>>> ----------
+      async starProject({ item }) {
+        const { id } = item;
+
+        item.isMark = item.isMark == '是' ? '否' : '是'
+        await window.vtoast.loading("操作中...");
+        await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'projectManagement',
+              actionId: 'updateItem',
+              actionData: { isMark: item.isMark },
+              where: { id: id }
+            }
+          }
+        });
+        await window.vtoast.success("操作成功");
+      },
+      // ---------- <<<<<<<<<<<<< 加星标 ----------
     }
   })
 </script>
 
 <style scoped>
+  /* 移入显示下划线 */
+  a:hover {
+    text-decoration: underline;
+  }
 </style>
 {% endblock %}
