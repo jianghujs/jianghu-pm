@@ -19,16 +19,16 @@
           <v-breadcrumbs class="pb-3 pt-0 pl-0" :items="breadcrumbs" divider="-"></v-breadcrumbs>
         </v-col>
         <!-- 搜索条件表单 >>>>>>>> -->
-        <!-- <v-col cols="12" xs="12" sm="12" md="8" xl="9">
+        <v-col cols="12" xs="12" sm="12" md="8" xl="9">
           <v-row class="jh-backend-form-container justify-end ma-0 py-1 pb-xs-2">
             <v-col cols="12" xs="6" sm="6" md="4" xl="3" class="pa-xs-0 pb-2 pl-1 pl-xs-1">
-              <v-select v-model="serverSearchInput.gender" color="success" prefix="性别：" class="jh-v-input bg-white" :items="constantObj.gender" dense filled single-line></v-select>
+              <v-select v-model="serverSearchInput.projectId" color="success" prefix="选择项目：" class="jh-v-input bg-white" :items="constantObj.projectList" dense filled single-line></v-select>
             </v-col>
             <v-btn class="jh-backend-search-btn elevation-0 ml-0 mt-3" color="success" small @click="doUiAction('getTableData')">
               查询
             </v-btn>
           </v-row>
-        </v-col> -->
+        </v-col>
         <!-- <<<<<<<< 搜索条件表单 -->
       </v-row>
     </div>
@@ -207,14 +207,21 @@
       isTableZebraLineShown: true,
       validationRules: {
         requireRules: [
-          v => !!v || 'This is required',
+          v => !!v || '必填',
         ],
       },
       // 下拉选项
-      constantObj: constantObj,
+      constantObj: {
+        ...constantObj,
+        projectList: [
+          {text: '全部项目', value: null},
+        ]
+      },
       currentSceneId: null,
       serverSearchInput: {
-        taskStatus: '进行中'
+        taskStatus: '进行中',
+        projectId: null,
+        taskMemberIdList: `%${window.userInfo.userId}%`
       },
       searchInput: null,
       isTableLoading: true,
@@ -252,6 +259,7 @@
     async created() {
     },
     mounted() {
+      this.doUiAction('getProjectList');
       this.doUiAction('getTableData');
       this.doUiAction('getUserList');
     },
@@ -263,6 +271,9 @@
             break;
           case 'getUserList':
             await this.getUserList(uiActionData);
+            break;
+          case 'getProjectList':
+            await this.getProjectList(uiActionData);
             break;
           case 'updateTask':
             await this.updateTask(uiActionData);
@@ -287,7 +298,7 @@
               pageId: 'workbenchManagement',
               actionId: 'selectItemList',
               actionData: {},
-              where: backendSearchData,
+              whereLike: backendSearchData,
               orderBy: [{ column: 'operationAt', order: 'desc' }]
             }
           }
@@ -322,8 +333,30 @@
             },
           }
         })
-      }
+      },
       // ---------- <<<<<<<<<<<<< 更新任务 ----------
+
+      // ---------- 项目列表 >>>>>>>>>>>>> ----------
+      async getProjectList() {
+        const rows = (await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'allPage',
+              actionId: 'getProjectList',
+              actionData: {},
+              whereLike: {
+                projectMemberIdList: `%${window.userInfo.userId}%`
+              },
+              orderBy: [{ column: 'operationAt', order: 'desc' }]
+            }
+          }
+        })).data.appData.resultData.rows;
+        this.constantObj.projectList = [
+          {text: '全部项目', value: null},
+          ...rows.map(r => ({ text: r.projectName, value: r.projectId }))
+        ];
+      },
+      // ---------- <<<<<<<<<<<<< 项目列表 ----------
     }
   })
 </script>
