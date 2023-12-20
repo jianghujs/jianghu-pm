@@ -71,7 +71,7 @@
                             </template>
                             <template v-slot:item.progress="{ item }">
                               <div class="d-flex align-center">
-                                <v-progress-linear :value="(item.completedTasks/item.totalTasks)*100"></v-progress-linear>
+                                <v-progress-linear height="8" :value="(item.completedTasks/item.totalTasks)*100"></v-progress-linear>
                                 <span class="ml-2 font-weight-bold">{{item.completedTasks}}/{{item.inProgressTasks}}/{{item.notStartedTasks}}</span>
                               </div>
                             </template>
@@ -182,7 +182,13 @@
                                 <v-text-field class="jh-v-input " dense filled single-line v-model="addItem.projectGroup"></v-text-field>
                               </v-col>
 
-                              <v-col cols="12" sm="12" md="4">
+                               
+                              <v-col cols="12" sm="12" md="4" xl="3">
+                                <span class="jh-input-label">项目描述</span>
+                                <v-text-field class="jh-v-input " dense filled single-line v-model="addItem.projectDesc"></v-text-field>
+                              </v-col>
+
+                              <v-col cols="12" sm="12" md="4" xl="3">
                                 <span class="jh-input-label">项目开始时间</span>
                                 <!-- 时间选择 -->
                                 <v-menu 
@@ -210,7 +216,7 @@
                               </v-col>
                               
                                
-                              <v-col cols="12" sm="12" md="4">
+                              <v-col cols="12" sm="12" md="4" xl="3">
                                 <span class="jh-input-label">项目截止时间</span>
                                 <v-menu :close-on-content-click="false" v-model="isProjectEndAtMenuShown" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
                                   <template v-slot:activator="{ on, attrs }">
@@ -221,11 +227,7 @@
                                 </v-menu>
                               </v-col>
 
-                               
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目描述</span>
-                                <v-text-field class="jh-v-input " dense filled single-line v-model="addItem.projectDesc"></v-text-field>
-                              </v-col>
+                              
                                
                               <v-col cols="12" sm="12" md="4" xl="3">
                                 <span class="jh-input-label">项目成员列表</span>
@@ -248,7 +250,7 @@
                     </v-navigation-drawer>
 
                     <!--编辑抽屉-->
-                    <v-navigation-drawer v-model="isEditDrawerShow" v-click-outside="drawerClickOutside" fixed temporary
+                    <v-navigation-drawer v-model="isEditDrawerShow" -click-outside="drawerClickOutside" fixed temporary
                         right width="80%" class="elevation-24">
                         <v-form ref="editForm" lazy-validation>
                             <!--抽屉标题-->
@@ -301,8 +303,12 @@
                                 <span class="jh-input-label">项目分组</span>
                                 <v-text-field class="jh-v-input " dense filled single-line v-model="editItem.projectGroup"></v-text-field>
                               </v-col> 
+                              <v-col cols="12" sm="12" md="4" xl="3">
+                                <span class="jh-input-label">项目描述</span>
+                                <v-text-field class="jh-v-input " dense filled single-line v-model="editItem.projectDesc"></v-text-field>
+                              </v-col> 
 
-                              <v-col cols="12" sm="12" md="4">
+                              <v-col cols="12" sm="12" md="4" xl="3">
                                 <span class="jh-input-label">项目开始时间</span>
                                 <!-- 时间选择 -->
                                 <v-menu :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
@@ -314,7 +320,7 @@
                                 </v-menu>
                               </v-col>
                                
-                              <v-col cols="12" sm="12" md="4">
+                              <v-col cols="12" sm="12" md="4" xl="3">
                                 <span class="jh-input-label">项目截止时间</span>
                                 <v-menu :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
                                   <template v-slot:activator="{ on, attrs }">
@@ -326,10 +332,7 @@
                                 </v-menu>
                               </v-col>
                               
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目描述</span>
-                                <v-text-field class="jh-v-input " dense filled single-line v-model="editItem.projectDesc"></v-text-field>
-                              </v-col> 
+                             
                               <v-col cols="12" sm="12" md="4" xl="3">
                                 <span class="jh-input-label">项目成员列表</span>
                                 <v-autocomplete multiple :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense single-line filled v-model="editItem.projectMemberIdList"></v-autocomplete>
@@ -340,6 +343,29 @@
                                 <v-btn color="success" small @click="doUiAction('updateItem')">保存</v-btn>
                                 <v-btn class="ml-2" small @click="isEditDrawerShow = false">取消
                                 </v-btn>
+                            </v-row>
+                        </v-form>
+    
+                        <!--抽屉关闭按钮-->
+                        <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
+                            @click="isEditDrawerShow = false">
+                            <v-icon>mdi-close</v-icon>
+                        </v-btn>
+                    </v-navigation-drawer>
+
+                    <!--编辑抽屉-->
+                    <v-navigation-drawer v-model="isEditDrawerShow" -click-outside="drawerClickOutside" fixed temporary
+                        right width="80%" class="elevation-24">
+                        <v-form ref="editForm" lazy-validation>
+                            <!--抽屉标题-->
+                           
+                            <v-row no-gutters>
+                              <span class="text-h7 font-weight-bold pa-4">项目公告</span>
+                              </v-row>
+                              <v-divider class="jh-divider"></v-divider>
+                            <!--抽屉表单-->
+                            <v-row class="mt-0 px-6">
+                              
                             </v-row>
                         </v-form>
     
@@ -457,7 +483,8 @@
       ],
       currentSceneId: null,
 
-      materialDesignIcons: materialDesignIcons
+      materialDesignIcons: materialDesignIcons,
+
     }),
     computed: {
       isMobile() {
@@ -550,7 +577,7 @@
               actionData: {},
               where: {},
               whereLike: serverSearchInput,
-              orderBy: [{ column: 'operationAt', order: 'desc' }]
+              orderBy: [{ column: 'isMark', order: 'desc' }]
             }
           }
         });
@@ -671,7 +698,7 @@
       },
 
       async doUpdateItem() {
-        const { id, ...data } = this.editItem;
+        const { id, totalTasks, notStartedTasks,inProgressTasks,completedTasks, ...data } = this.editItem;
         data.projectMemberIdList = data.projectMemberIdList.join(',')
 
         await window.vtoast.loading("修改数据");
