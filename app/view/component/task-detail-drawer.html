@@ -2,8 +2,22 @@
   <v-navigation-drawer v-model="isDrawerShown" :permanent="isDrawerShown" fixed temporary right width="80%"
     class="elevation-24">
     <!--抽屉标题-->
-    <v-row no-gutters>
-      <span class="text-h7 font-weight-bold pa-4">任务详情</span>
+    <v-row class="justify-space-between align-center pa-4" no-gutters>
+      <span class="text-h7 font-weight-bold">任务详情</span>
+      <div>
+        <v-menu offset-y>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn small v-bind="attrs" v-on="on">
+              <v-icon size="16">mdi-dots-horizontal</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item @click="doUiAction('deleteTask')">
+              <v-list-item-title>删除</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
     </v-row>
     <v-divider class="jh-divider"></v-divider>
 
@@ -125,6 +139,11 @@
             await this.updateTask(uiActionData);
             await this.close();
             break;
+          case 'deleteTask':
+            await this.confirmDeleteItemDialog();
+            await this.deleteTask(uiActionData);
+            await this.close();
+            break;
           default:
             console.error("[doUiAction] uiActionId not find", { uiActionId });
             break;
@@ -190,7 +209,7 @@
 
       // ---------- 删除task >>>>>>>>>>>>> ----------
       async confirmDeleteItemDialog() {
-        if (await window.confirmDialog({ title: "确认将任务从项目删除？" }) === false) {
+        if (await window.confirmDialog({ title: "确认将任删除？" }) === false) {
           throw new Error("取消");
         }
       },
