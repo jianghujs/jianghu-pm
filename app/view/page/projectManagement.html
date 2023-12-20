@@ -69,6 +69,14 @@
                                 <v-icon v-else>mdi-star-outline</v-icon>
                               </a>
                             </template>
+                            <template v-slot:item.progress="{ item }">
+                              <div class="d-flex align-center">
+                                <v-progress-linear :value="(item.completedTasks/item.totalTasks)*100"></v-progress-linear>
+                                <span class="ml-2 font-weight-bold">{{item.completedTasks}}/{{item.inProgressTasks}}/{{item.notStartedTasks}}</span>
+                              </div>
+                            </template>
+
+                            
                             <template v-slot:item.projectName="{ item }">
                               <div class="d-flex align-center">
                                 <div v-if="item.projectIcon" class="mr-1 row-icon">
@@ -416,6 +424,7 @@
       headers: [
         { text: "", value: "isMark", width: 0 },
         { text: "项目名称", value: "projectName", width: 120 },
+        { text: "完成度", value: "progress", width: 120 },
         { text: "截止时间", value: "projectEndAt", width: 120 },
         { text: "创建时间", value: "projectCreateAt", width: 120 },
         { text: "管理员", value: "projectManagerId", width: 120 },
