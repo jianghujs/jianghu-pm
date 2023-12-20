@@ -169,7 +169,10 @@
                  
                 <v-col cols="12" sm="12" md="12" xl="12">
                   <span class="inputLabel">任务内容</span>
-                  <v-textarea class="jh-v-input " dense filled single-line v-model="addItem.taskContent"></v-textarea>
+             
+                  <div id="editorMdContainer" class="mb-0">
+                    <textarea style="display:none;">{{ addItem.taskContent }}</textarea>
+                  </div>
                 </v-col>
 
                 <v-col cols="12" sm="12" md="4" xl="3">
@@ -287,6 +290,13 @@
 {% block vueScript %}
 {% include 'common/constant.html' %}
 {% include 'component/task-detail-drawer.html' %}
+
+<!-- 加载页面静态资源 >>>>>>>>>>>>> -->
+<link rel="stylesheet" href="/<$ ctx.app.config.appId $>/public/plugins/editor.md/css/editormd.min.css" />
+<link href="/<$ ctx.app.config.appId $>/public/articleViewer/font-awesome.min.css?v=6.0.0" />
+<script src="/<$ ctx.app.config.appId $>/public/lib/jquery/jquery.min.js"></script>
+<script src="/<$ ctx.app.config.appId $>/public/plugins/editor.md/editormd.js"></script>
+<!-- <<<<<<<<<<<<< 加载页面静态资源 -->
 <script type="module">
 
   new Vue({
@@ -381,6 +391,7 @@
           case 'startCreateItem':
             await this.clearItemData();
             await this.openCreateItemDialog();
+            await this.initEditorMd();
             break;
           case 'createItem':
             await this.confirmCreateItemDialog();
@@ -520,8 +531,25 @@
             },
           }
         })
-      }
+      },
       // ---------- <<<<<<<<<<<<< 更新任务 ----------
+
+      // ---------- 编辑器 >>>>>>>>>>>>> ----------
+      async initEditorMd() {
+        const that = this;
+        document.getElementById('editorMdContainer').innerHTML = `<textarea style=\"display:none;\">${this.addItem['taskContent'] || ""}</textarea>`;
+
+        that.editor = editormd('editorMdContainer', {
+          height: 300,
+          watch: false,
+          saveHTMLToTextarea: true,    // 保存 HTML 到 Textarea
+          path: '/<$ ctx.app.config.appId $>/public/plugins/editor.md/lib/',
+          onchange: function (val) {
+            console.log('editorMdContainer:', val);
+          },
+        });
+      },
+      // ---------- <<<<<<<<<<<<< 编辑器 ----------
     }
   })
 </script>

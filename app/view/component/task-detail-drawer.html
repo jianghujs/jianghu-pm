@@ -36,7 +36,10 @@
 
         <v-col cols="12" sm="12" md="12" xl="12">
           <span class="inputLabel">任务内容</span>
-          <v-textarea class="jh-v-input " dense filled single-line v-model="detail.taskContent"></v-textarea>
+
+          <div id="editorMdContainer" class="mb-0">
+            <textarea style="display:none;">{{ detail.taskContent }}</textarea>
+          </div>
         </v-col>
 
         <v-col cols="12" sm="12" md="4" xl="3">
@@ -126,6 +129,7 @@
 
     }),
     created() {
+
     },
     methods: {
       async doUiAction(uiActionId, uiActionData) {
@@ -133,6 +137,7 @@
           case 'open':
             await this.open(uiActionData);
             await this.getTaskDetail();
+            await this.initEditorMd();
             break;
           case 'updateTask':
             await this.confirmUpdateItemDialog();
@@ -166,7 +171,7 @@
           }
         })).data.appData.resultData.rows;
         this.isLoading = false;
-        rows.forEach(row=> {
+        rows.forEach(row => {
           row.taskMemberIdList = row.taskMemberIdList.split(',')
         })
 
@@ -187,6 +192,7 @@
           data.taskMemberIdList = [data.taskManagerId]
         }
         data.taskMemberIdList = data.taskMemberIdList.join(',')
+        data.taskContent = this.editor.getMarkdown()
 
         await window.jianghuAxios({
           data: {
@@ -231,6 +237,23 @@
         this.$emit('save')
       },
       // ---------- <<<<<<<<<<<<< 删除task ----------
+
+      // ---------- 编辑器 >>>>>>>>>>>>> ----------
+      async initEditorMd() {
+        const that = this;
+        document.getElementById('editorMdContainer').innerHTML = `<textarea style=\"display:none;\">${this.detail['taskContent'] || ""}</textarea>`;
+
+        that.editor = editormd('editorMdContainer', {
+          height: 300,
+          watch: false,
+          saveHTMLToTextarea: true,    // 保存 HTML 到 Textarea
+          path: '/<$ ctx.app.config.appId $>/public/plugins/editor.md/lib/',
+          onchange: function (val) {
+            console.log('editorMdContainer:', val);
+          },
+        });
+      },
+      // ---------- <<<<<<<<<<<<< 编辑器 ----------
     }
   })
 </script>
