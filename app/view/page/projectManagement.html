@@ -70,7 +70,12 @@
                               </a>
                             </template>
                             <template v-slot:item.projectName="{ item }">
-                              <a @click="doUiAction('redirect', { item, button: {path: 'taskManagementOfOneProject'} })">{{ item.projectName }}</a>
+                              <div class="d-flex align-center">
+                                <div v-if="item.projectIcon" class="mr-1 row-icon">
+                                  <v-icon color="blue" size="20">mdi-{{item.projectIcon}}</v-icon>
+                                </div>
+                                <a @click="doUiAction('redirect', { item, button: {path: 'taskManagementOfOneProject'} })">{{ item.projectName }}</a>
+                              </div>
                             </template>
                             <template v-slot:item.projectEndAt="{ item }">
                               <v-chip v-if="item.projectEndAt" small>{{ item.projectEndAt }}截止</v-chip>
@@ -135,7 +140,34 @@
                                
                               <v-col cols="12" sm="12" md="4" xl="3">
                                 <span class="jh-input-label">项目图标</span>
-                                <v-text-field class="jh-v-input " dense filled single-line v-model="addItem.projectIcon"></v-text-field>
+
+                                <v-menu 
+                                  :nudge-right="40" 
+                                  transition="scale-transition" 
+                                  offset-y 
+                                  min-width="auto"
+                                  max-width="20%"
+                                  max-height="60%"
+                                >
+                                  <template v-slot:activator="{ on, attrs }">
+                                    <v-text-field 
+                                      class="jh-v-input" 
+                                      dense 
+                                      single-line 
+                                      filled 
+                                      v-model="addItem.projectIcon" 
+                                      v-bind="attrs"
+                                      v-on="on"
+                                    ></v-text-field>
+                                  </template>
+                                  <v-card>
+                                    <div class="d-flex flex-wrap">
+                                      <div v-for="icon in materialDesignIcons" :class="`item-icon pa-2 ${addItem.projectIcon == icon && 'green'}`" @click="addItem.projectIcon=icon">
+                                        <v-btn x-small icon> <v-icon>mdi-{{icon}}</v-icon></v-btn>
+                                      </div>
+                                    </div>
+                                  </v-card>
+                                </v-menu>
                               </v-col>
                               <v-col cols="12" sm="12" md="4" xl="3">
                                 <span class="jh-input-label">项目分组</span>
@@ -226,7 +258,35 @@
                               </v-col> 
                               <v-col cols="12" sm="12" md="4" xl="3">
                                 <span class="jh-input-label">项目图标</span>
-                                <v-text-field class="jh-v-input " dense filled single-line v-model="editItem.projectIcon"></v-text-field>
+                                
+                                <v-menu 
+                                  :nudge-right="40" 
+                                  transition="scale-transition" 
+                                  offset-y 
+                                  min-width="auto"
+                                  max-width="20%"
+                                  max-height="60%"
+                                >
+                                  <template v-slot:activator="{ on, attrs }">
+                                    <v-text-field 
+                                      class="jh-v-input" 
+                                      dense 
+                                      single-line 
+                                      filled 
+                                      v-model="editItem.projectIcon" 
+                                      v-bind="attrs"
+                                      v-on="on"
+                                    ></v-text-field>
+                                  </template>
+                                  <v-card>
+                                    <div class="d-flex flex-wrap">
+                                      <div v-for="icon in materialDesignIcons" :class="`item-icon pa-2 ${editItem.projectIcon == icon && 'green'}`" @click="editItem.projectIcon=icon">
+                                        <v-btn x-small icon> <v-icon>mdi-{{icon}}</v-icon></v-btn>
+                                      </div>
+                                    </div>
+                                  </v-card>
+                                </v-menu>
+                                
                               </v-col>
                                
                               <v-col cols="12" sm="12" md="4" xl="3">
@@ -315,6 +375,9 @@
 <!-- 加载页面组件 >>>>>>>>>>>>> -->
 {% include 'common/jianghuJs/fixedTableHeightV4.html' %}
 <!-- <<<<<<<<<<<<< 加载页面组件 -->
+
+<script src="/<$ ctx.app.config.appId $>/public/material-design-icons.js"></script>
+
 <script type="module">
   new Vue({
     el: '#app',
@@ -383,7 +446,9 @@
           "id": "scene-fixed-2"
         },
       ],
-      currentSceneId: null
+      currentSceneId: null,
+
+      materialDesignIcons: materialDesignIcons
     }),
     computed: {
       isMobile() {
@@ -730,6 +795,16 @@
   /* 移入显示下划线 */
   a:hover {
     text-decoration: underline;
+  }
+
+  .item-icon {
+    border: 1px solid #eee;
+  }
+
+  .row-icon {
+    background-color: #f4f5f7;
+    border: 1px solid #e2e4e9;
+    border-radius: 2px;
   }
 </style>
 {% endblock %}
