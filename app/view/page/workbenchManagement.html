@@ -57,14 +57,82 @@
           :class="{'zebraLine': isTableZebraLineShown }"
           fixed-header
           class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
-          <!-- 表格操作按钮 -->
-          <template v-slot:item.action="{ item }">
-            <span role="button" class="success--text font-weight-medium font-size-2 mr-2" @click="doUiAction('startUpdateItem', item)">
-              <v-icon size="16" class="success--text">mdi-note-edit-outline</v-icon>修改
-            </span>
-            <span role="button" class="success--text font-weight-medium font-size-2" @click="doUiAction('deleteItem', item)">
-              <v-icon size="16" class="success--text">mdi-trash-can-outline</v-icon>删除
-            </span>
+          <template v-slot:item.taskTitle="{ item }">
+            <a @click="doUiAction('startUpdateTask', { item })">{{ item.taskTitle }}</a>
+          </template>
+          <template v-slot:item.taskStatus="{ item }">
+            <v-select :items="constantObj.taskStatus" v-model="item.taskStatus"class="jh-v-input" dense filled single-line @change="doUiAction('updateTask', { key: 'taskStatus', value: $event, item })">
+              <template v-slot:item="{ item }">
+                <v-chip :color="item.color" dark x-small>{{item.text}}</v-chip>
+              </template>
+              <template v-slot:selection="{ item }">
+                <v-chip :color="item.color" dark x-small>{{item.text}}</v-chip>
+              </template>
+              
+            </v-select>
+          </template>
+          <template v-slot:item.taskLevel="{ item }">
+            <v-select :items="constantObj.taskLevel" v-model="item.taskLevel"class="jh-v-input" dense filled single-line @change="doUiAction('updateTask', { key: 'taskLevel', value: $event, item })">
+              <template #prepend-inner>
+                <v-icon :color="constantObj.taskLevel.find(l=> l.text==item.taskLevel).color">mdi-circle-medium</v-icon>
+              </template>
+              <template v-slot:item="{ item }">
+                <v-icon :color="item.color">mdi-circle-medium</v-icon>
+                <span>{{item.text}}</span>
+              </template>
+            </v-select>
+          </template>
+          <template v-slot:item.taskManagerId="{ item }">
+          
+            <v-autocomplete :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense single-line filled v-model="item.taskManagerId" @change="doUiAction('updateTask', { key: 'taskManagerId', value: $event, item })"></v-autocomplete>
+          </template>
+          <template v-slot:item.taskStartAt="{ item }">
+            <v-menu 
+              v-model="item.isStartAtMenuShown" 
+              :close-on-content-click="false"
+              :nudge-right="40" 
+              transition="scale-transition" 
+              offset-y 
+              min-width="auto"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-text-field 
+                  class="jh-v-input" 
+                  dense 
+                  single-line 
+                  filled 
+                  v-model="item.taskStartAt" 
+                  v-bind="attrs" 
+                  v-on="on"
+                ></v-text-field>
+              </template>
+              <v-date-picker v-model="item.taskStartAt" @change="doUiAction('updateTask', { key: 'taskStartAt', value: $event, item })" no-title scrollable></v-date-picker>
+            </v-menu>
+          </template>
+          <template v-slot:item.taskEndAt="{ item }">
+            <v-menu 
+              v-model="item.isEndAtMenuShown" 
+              :close-on-content-click="false"
+              :nudge-right="40" 
+              transition="scale-transition" 
+              offset-y 
+              min-width="auto"
+              
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-text-field 
+                  class="jh-v-input" 
+                  dense 
+                  single-line 
+                  filled 
+                  v-model="item.taskEndAt" 
+                  v-bind="attrs" 
+                  v-on="on"
+                  
+                ></v-text-field>
+              </template>
+              <v-date-picker v-model="item.taskEndAt" @change="doUiAction('updateTask', { key: 'taskEndAt', value: $event, item })" no-title scrollable></v-date-picker>
+            </v-menu>
           </template>
           <!-- 没有数据 -->
           <template v-slot:loading>
@@ -83,7 +151,8 @@
           </template>
         </v-data-table>
       </v-card>
-   
+      
+      <task-detail-drawer :user-list="userList" ref="taskDetail" @save="doUiAction('getTableData')" />
     </div>
 
     <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
@@ -112,124 +181,157 @@
 {% block vueScript %}
 
 {% include 'common/jianghuJs/fixedTableHeightV4.html' %}
+{% include 'common/constant.html' %}
+{% include 'component/task-detail-drawer.html' %}
 <script type="module">
-new Vue({
-  el: '#app',
-  template: '#app-template',
-  vuetify: new Vuetify(),
-  data: () => ({
-    // 面包屑
-    breadcrumbs: [
-      {
-        text: '首页',
-        disabled: true,
-      },
-      {
-        text: '工作台',
-        disabled: true,
-      }
-    ],
-    isHelpPageDrawerShown: false,
-    isHelpPageDrawerLoaded: false,
-    isMobile: window.innerWidth < 500,
-    // 表格相关数据
-    isTableZebraLineShown: true,
-    validationRules: {
-      requireRules: [
-        v => !!v || 'This is required',
-      ],
-    },
-    // 下拉选项
-    constantObj: {
-      gender: [{"value": null, "text": "全部"}, {"value": "male", "text": "男"}, {"value": "female", "text": "女"}],
-    },
-    currentSceneId: null,
-    serverSearchInput: {
-      taskStatus: '进行中'
-    },
-    searchInput: null,
-    isTableLoading: true,
-    tableData: [],
-    headers: [
-      {text: "任务ID", value: "taskId", width: 120}, 
-      {text: "任务名称", value: "taskTitle", width: 120}, 
-      {text: "任务描述", value: "taskDesc", width: 120}, 
-      {text: "任务优先级", value: "taskLevel", width: 120}, 
-      {text: "任务标签", value: "taskTag", width: 120}, 
-      {text: "任务状态", value: "taskStatus", width: 120}, 
-      {text: "任务类型", value: "taskType", width: 120}, 
-      {text: "任务内容", value: "taskContent", width: 120}, 
-      {text: "任务创建时间", value: "taskCreateAt", width: 120}, 
-      {text: "任务开始时间", value: "taskStartAt", width: 120}, 
-      {text: "任务结束时间", value: "taskEndAt", width: 120}, 
-      {text: "负责人id", value: "taskManagerId", width: 120}, 
-      {text: "参与人id", value: "taskMemberIdList", width: 120}, 
-      {text: "子任务列表", value: "taskChildList", width: 120}, 
-      {text: "任务关联的信息列表", value: "taskRelationList", width: 120}, 
-      {text: "任务关联的附件列表", value: "taskFileList", width: 120}, 
-      {text: "操作者", value: "operationByUser", width: 120},
-      {text: "操作时间", value: "operationAt", width: 250},
-      {text: '操作', value: 'action', align: 'center', sortable: false, width: 120, class: 'fixed', cellClass: 'fixed'},
-
-    ],
-
-    isCreateDrawerShown: false,
-    createItem: {},
-    createActionData: {},
-    isUpdateDrawerShown: false,
-    updateItem: {},
-    updateItemId: null,
-    updateActionData: {},
-    deleteItem: {},
-    deleteItemId: null
-
-  }),
-  watch: {
-    isHelpPageDrawerShown(val) {
-      if (val && !this.isHelpPageDrawerLoaded) {
-        this.isHelpPageDrawerLoaded = true;
-      }
-    },
-  },
-  async created() {
-  },
-  mounted() {
-    this.doUiAction('getTableData');
-  },
-  methods: {
-    async doUiAction(uiActionId, uiActionData) {
-      switch (uiActionId) {
-        case 'getTableData':
-          await this.getTableData();
-          break;
-        default:
-          console.error("[doUiAction] uiActionId not find", {uiActionId});
-          break;
-      }
-    },
-    /**
-     * 获取表格数据
-     */
-    async getTableData() {
-      this.isTableLoading = true;
-      const backendSearchData = _.pickBy(this.serverSearchInput, _.identity);
-      const rows = (await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'workbenchManagement',
-            actionId: 'selectItemList',
-            actionData: {},
-            where: backendSearchData,
-            orderBy: [{column: 'operationAt', order: 'desc'}]
-          }
+  new Vue({
+    el: '#app',
+    template: '#app-template',
+    vuetify: new Vuetify(),
+    data: () => ({
+      // 面包屑
+      breadcrumbs: [
+        {
+          text: '首页',
+          disabled: true,
+        },
+        {
+          text: '工作台',
+          disabled: true,
         }
-      })).data.appData.resultData.rows;
-      this.tableData = rows;
-      this.isTableLoading = false;
+      ],
+      isHelpPageDrawerShown: false,
+      isHelpPageDrawerLoaded: false,
+      isMobile: window.innerWidth < 500,
+      // 表格相关数据
+      isTableZebraLineShown: true,
+      validationRules: {
+        requireRules: [
+          v => !!v || 'This is required',
+        ],
+      },
+      // 下拉选项
+      constantObj: constantObj,
+      currentSceneId: null,
+      serverSearchInput: {
+        taskStatus: '进行中'
+      },
+      searchInput: null,
+      isTableLoading: true,
+      tableData: [],
+      headers: [
+        { text: '任务ID', value: 'taskId', width: 0 },
+        { text: '任务名称', value: 'taskTitle', width: 120 },
+        { text: '优先级', value: 'taskLevel', width: 120 },
+        { text: '状态', value: 'taskStatus', width: 120 },
+        { text: '处理人', value: 'taskManagerId', width: 120 },
+        { text: '所属项目', value: 'projectId', width: 120 },
+        { text: '截止日期', value: 'taskEndAt', width: 120 },
+        { text: '创建日期', value: 'taskCreateAt', width: 120 },
+      ],
+
+      isCreateDrawerShown: false,
+      createItem: {},
+      createActionData: {},
+      isUpdateDrawerShown: false,
+      updateItem: {},
+      updateItemId: null,
+      updateActionData: {},
+      deleteItem: {},
+      deleteItemId: null,
+
+      userList: [],
+    }),
+    watch: {
+      isHelpPageDrawerShown(val) {
+        if (val && !this.isHelpPageDrawerLoaded) {
+          this.isHelpPageDrawerLoaded = true;
+        }
+      },
     },
-  }
-})
+    async created() {
+    },
+    mounted() {
+      this.doUiAction('getTableData');
+      this.doUiAction('getUserList');
+    },
+    methods: {
+      async doUiAction(uiActionId, uiActionData) {
+        switch (uiActionId) {
+          case 'getTableData':
+            await this.getTableData();
+            break;
+          case 'getUserList':
+            await this.getUserList(uiActionData);
+            break;
+          case 'updateTask':
+            await this.updateTask(uiActionData);
+            break;
+          case 'startUpdateTask':
+            await this.$refs.taskDetail.doUiAction('open', uiActionData.item);
+            break;
+          default:
+            console.error("[doUiAction] uiActionId not find", { uiActionId });
+            break;
+        }
+      },
+      /**
+       * 获取表格数据
+       */
+      async getTableData() {
+        this.isTableLoading = true;
+        const backendSearchData = _.pickBy(this.serverSearchInput, _.identity);
+        const rows = (await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'workbenchManagement',
+              actionId: 'selectItemList',
+              actionData: {},
+              where: backendSearchData,
+              orderBy: [{ column: 'operationAt', order: 'desc' }]
+            }
+          }
+        })).data.appData.resultData.rows;
+        this.tableData = rows;
+        this.isTableLoading = false;
+      },
+      async getUserList() {
+        const rows = (await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'allPage',
+              actionId: 'getUserList',
+              actionData: {},
+              orderBy: [{ column: 'operationAt', order: 'desc' }]
+            }
+          }
+        })).data.appData.resultData.rows;
+        this.userList = rows;
+      },
+
+      // ---------- 更新任务 >>>>>>>>>>>>> ----------
+      async updateTask({ value, item, key }) {
+        const { id } = item;
+        await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'taskManagementOfOneProject',
+              actionId: 'updateItem',
+              actionData: { [key]: value },
+              where: { id }
+            },
+          }
+        })
+      }
+      // ---------- <<<<<<<<<<<<< 更新任务 ----------
+    }
+  })
 </script>
 
 <style scoped>
-</style>{% endblock %}
+  /* 移入显示下划线 */
+  a:hover {
+    text-decoration: underline;
+  }
+</style>
+{% endblock %}
