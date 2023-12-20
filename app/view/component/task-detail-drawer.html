@@ -90,6 +90,16 @@
             v-model="detail.taskStatus"></v-autocomplete>
         </v-col>
 
+        <v-col cols="12" sm="12" md="12">
+          <span class="jh-input-label grey--text">子任务</span>
+
+          <task-child-list :todos.sync="detail.taskChildList"></task-child-list>
+        </v-col>
+        <v-col cols="12" sm="12" md="12">
+          <span class="jh-input-label grey--text">附件</span>
+
+          <task-attachment-list :files.sync="detail.taskFileList"></task-attachment-list>
+        </v-col>
       </v-row>
       <!--抽屉操作按钮-->
       <v-row class="mx-0 justify-end mt-4">
@@ -104,6 +114,9 @@
     </v-btn>
   </v-navigation-drawer>
 </template>
+
+{% include 'component/task-child-list.html' %}
+{% include 'component/task-attachment-list.html' %}
 
 <script type="module">
   Vue.component("task-detail-drawer", {
@@ -173,6 +186,8 @@
         this.isLoading = false;
         rows.forEach(row => {
           row.taskMemberIdList = row.taskMemberIdList.split(',')
+          row.taskChildList = JSON.parse(row.taskChildList || '[]')
+          row.taskFileList = JSON.parse(row.taskFileList || '[]')
         })
 
         this.detail = rows[0] || {}
@@ -193,6 +208,8 @@
         }
         data.taskMemberIdList = data.taskMemberIdList.join(',')
         data.taskContent = this.editor.getMarkdown()
+        data.taskChildList = JSON.stringify(data.taskChildList)
+        data.taskFileList = JSON.stringify(data.taskFileList)
 
         await window.jianghuAxios({
           data: {
