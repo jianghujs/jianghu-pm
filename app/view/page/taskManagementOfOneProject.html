@@ -12,14 +12,37 @@
       <jh-menu />
       <v-main class="d-flex flex-column" style="margin-top: 60px">
         <!-- 头部内容 >>>>>>>>>>>>> -->
-        <div class="pageSecondBar d-flex px-8"><div>
-            <div class="appTitle pt-3" style="font-size: 18px; font-weight: 700">
-              项目详情
-              <!-- 帮助页按钮 -->
-              <v-icon @click="isHelpPageDrawerShow = true" small>mdi-help-circle-outline</v-icon>
-            </div>
-            <v-breadcrumbs class="pb-3 pt-0 pl-0" :items="breadcrumbs" divider="-"></v-breadcrumbs>
-          </div>
+        <div class="jh-page-second-bar px-8">
+            <v-row class="justify-space-between">
+              <v-col cols="12" xs="12" sm="12" md="4">
+                <div class="pt-3 text-h7 font-weight-bold">项目详情
+                  <!-- 帮助页按钮 -->
+                  <v-icon @click="isHelpPageDrawerShown = true" color="success" small>mdi-help-circle-outline
+                  </v-icon>
+                </div>
+                <v-breadcrumbs class="pb-3 pt-0 pl-0" :items="breadcrumbs" divider="-"></v-breadcrumbs>
+              </v-col>
+             <!-- 搜索条件表单 >>>>>>>> -->
+             <v-col cols="12" xs="12" sm="12" md="8" class="d-flex align-center">
+              <v-row no-gutters class=" justify-end">
+                <v-col cols="12" xs="12" md="2" class="pr-2 mb-2 mb-sm-0">
+                  <v-select clearable v-model="serverSearchInput.taskStatus" color="success" prefix="状态：" class="jh-v-input bg-white" :items="constantObj.taskStatus" dense filled single-line></v-select>
+                </v-col>
+                <v-col cols="12" xs="12" md="2" class="pr-2 mb-2 mb-sm-0">
+                  <v-select clearable v-model="serverSearchInput.taskLevel" color="success" prefix="优先级：" class="jh-v-input bg-white" :items="constantObj.taskLevel" dense filled single-line></v-select>
+                </v-col>
+                <v-col cols="12" xs="12" md="2" class="pr-2 mb-2 mb-sm-0">
+                  <v-select clearable v-model="serverSearchInput.taskTag" color="success" prefix="标签：" class="jh-v-input bg-white" :items="constantObj.taskTag" dense filled single-line></v-select>
+                </v-col>
+                <v-col cols="12" xs="12" md="2" class="pr-2 mb-2 mb-sm-0">
+                  <v-select clearable v-model="serverSearchInput.taskManagerId" color="success" prefix="负责人：" class="jh-v-input bg-white" :items="constantObj.taskManagerId" dense filled single-line></v-select>
+                </v-col>
+                <v-btn class="jh-backend-search-btn" color="success" small @click="doUiAction('refreshTableData')">
+                  查询
+                </v-btn>
+              </v-row>
+            </v-col>
+            </v-row>
         </div>
         <!-- <<<<<<<<<<<<< 头部内容 -->
         <div class="pageBodyContainer px-8" style="flex: 1;">
@@ -463,7 +486,11 @@
       isAddDrawerShow: false,
       addItem: {},
 
-      constantObj: constantObj,
+      constantObj: {
+        ...constantObj,
+        taskTag: [],
+        taskManagerId: [],
+      },
       isStartAtMenuShown: false,
       isEndAtMenuShown: false,
 
@@ -472,6 +499,10 @@
       projectDetail: {},
       isAddAfficheDialogShown: false,
       affiche: null,
+
+      serverSearchInput: {
+
+      }
     }),
     computed: {
       isMobile() {
@@ -558,21 +589,33 @@
       */
       async refreshTableData() {
         this.isTableLoading = true;
+        const serverSearchInput = _.pickBy(this.serverSearchInput, value => !!value);
+
         const result = await window.jianghuAxios({
           data: {
             appData: {
               pageId: 'taskManagementOfOneProject',
               actionId: 'selectCurrentList',
               where: { projectId: this.projectId },
+              whereLike: serverSearchInput,
               orderBy: [{ column: 'operationAt', order: 'desc' }]
             }
           }
         });
         let rows = result.data.appData.resultData.rows
 
+        // 标签列表,constantObj.taskTag
+        let taskTagList = [], taskManagerIdList = []
         rows.forEach(row => {
           row.taskMemberIdList = row.taskMemberIdList ? row.taskMemberIdList.split(',') : []
+          row.taskTag = row.taskTag ? row.taskTag.split(',') : []
+
+          taskTagList = taskTagList.concat(row.taskTag.map(tag => ({ text: tag, value: tag })))
+          taskManagerIdList = taskManagerIdList.concat((row.taskManagerId ? [row.taskManagerId] : []).map(id => ({ text: id, value: id })))
         })
+        // loadsh去重,根据value
+        this.constantObj.taskTag = _.uniqBy(taskTagList, 'value')
+        this.constantObj.taskManagerId = _.uniqBy(taskManagerIdList, 'value')
         this.tableDataFromBackend = rows;
         this.isTableLoading = false;
       },
