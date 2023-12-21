@@ -49,8 +49,6 @@
                             </template>
                             <template v-slot:item.action="{ item }">
                               <v-btn v-for="tableButton of tableButtonList" :color="tableButton.color" outlined x-small class="elevation-0 mr-2" @click="doUiAction(tableButton.action, {item, button: tableButton})">{{ tableButton.text }}</v-btn>
-
-
                             </template>
                             <!--没有数据-->
                             <template v-slot:loading>

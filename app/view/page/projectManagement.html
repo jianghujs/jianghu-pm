@@ -250,7 +250,7 @@
                     </v-navigation-drawer>
 
                     <!--编辑抽屉-->
-                    <v-navigation-drawer v-model="isEditDrawerShow" -click-outside="drawerClickOutside" fixed temporary
+                    <v-navigation-drawer v-model="isEditDrawerShow" v-click-outside="drawerClickOutside" fixed temporary
                         right width="80%" class="elevation-24">
                         <v-form ref="editForm" lazy-validation>
                             <!--抽屉标题-->
@@ -353,28 +353,7 @@
                         </v-btn>
                     </v-navigation-drawer>
 
-                    <!--编辑抽屉-->
-                    <v-navigation-drawer v-model="isEditDrawerShow" -click-outside="drawerClickOutside" fixed temporary
-                        right width="80%" class="elevation-24">
-                        <v-form ref="editForm" lazy-validation>
-                            <!--抽屉标题-->
-                           
-                            <v-row no-gutters>
-                              <span class="text-h7 font-weight-bold pa-4">项目公告</span>
-                              </v-row>
-                              <v-divider class="jh-divider"></v-divider>
-                            <!--抽屉表单-->
-                            <v-row class="mt-0 px-6">
-                              
-                            </v-row>
-                        </v-form>
-    
-                        <!--抽屉关闭按钮-->
-                        <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
-                            @click="isEditDrawerShow = false">
-                            <v-icon>mdi-close</v-icon>
-                        </v-btn>
-                    </v-navigation-drawer>
+                 
                 </div>
     
                 <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
@@ -698,7 +677,7 @@
       },
 
       async doUpdateItem() {
-        const { id, totalTasks, notStartedTasks,inProgressTasks,completedTasks, ...data } = this.editItem;
+        const { id, totalTasks, notStartedTasks, inProgressTasks, completedTasks, ...data } = this.editItem;
         data.projectMemberIdList = data.projectMemberIdList.join(',')
 
         await window.vtoast.loading("修改数据");
