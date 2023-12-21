@@ -12,6 +12,9 @@
             </v-btn>
           </template>
           <v-list>
+            <v-list-item @click="doUiAction('updateTask')">
+              <v-list-item-title>保存</v-list-item-title>
+            </v-list-item>
             <v-list-item @click="doUiAction('deleteTask')">
               <v-list-item-title>删除</v-list-item-title>
             </v-list-item>
@@ -32,6 +35,15 @@
           <span class="inputLabel"><span class="red--text">*</span>任务名称</span>
           <v-text-field :rules="requireRules" class="jh-v-input " dense filled single-line
             v-model="detail.taskTitle"></v-text-field>
+        </v-col>
+        <v-col cols="12" sm="12" md="4" xl="3">
+          <span class="inputLabel">任务标签</span>
+          <v-combobox v-model="detail.taskTag" :items="[]" multiple chips deletable-chips class="jh-v-input " dense
+            filled single-line small>
+            <template v-slot:selection="data">
+              <v-chip small>{{data.item}}</v-chip>
+            </template>
+          </v-combobox>
         </v-col>
 
         <v-col cols="12" sm="12" md="12" xl="12">
@@ -74,16 +86,9 @@
 
         <v-col cols="12" sm="12" md="4" xl="3">
           <span class="inputLabel">处理人</span>
-          <v-autocomplete :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense
-            single-line filled v-model="detail.taskManagerId"></v-autocomplete>
+          <v-autocomplete :items="userList" class="jh-v-input" item-text="username" item-value="id" dense single-line
+            filled v-model="detail.taskManagerId"></v-autocomplete>
         </v-col>
-
-        <v-col cols="12" sm="12" md="4" xl="3">
-          <span class="inputLabel">团队成员</span>
-          <v-autocomplete multiple :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense
-            single-line filled v-model="detail.taskMemberIdList"></v-autocomplete>
-        </v-col>
-
         <v-col cols="12" sm="12" md="4" xl="3">
           <span class="inputLabel">状态</span>
           <v-autocomplete :items="constantObj.taskStatus" class="jh-v-input" dense single-line filled
@@ -91,23 +96,28 @@
         </v-col>
 
         <v-col cols="12" sm="12" md="12">
-          <span class="jh-input-label grey--text">子任务</span>
+          <span class="inputLabel">子任务</span>
 
           <task-child-list :todos.sync="detail.taskChildList"></task-child-list>
         </v-col>
         <v-col cols="12" sm="12" md="12">
-          <span class="jh-input-label grey--text">附件</span>
+          <span class="inputLabel">附件</span>
 
           <task-attachment-list :files.sync="detail.taskFileList"></task-attachment-list>
         </v-col>
+
+        <v-col cols="12" sm="12" md="12">
+          <span class="inputLabel">评论</span>
+          <task-comment-list :comments.sync="detail.taskCommentList" @confirm="postComment" />
+        </v-col>
       </v-row>
+
       <!--抽屉操作按钮-->
-      <v-row class="mx-0 justify-end mt-4">
+      <!-- <v-row class="mx-0 justify-end mt-4">
         <v-btn color="success" @click="doUiAction('updateTask')" small>保存</v-btn>
         <v-btn class="elevation-0 ml-2" @click="isDrawerShown = false" small>取消</v-btn>
-      </v-row>
+      </v-row> -->
     </v-form>
-    <!--抽屉关闭按钮-->
     <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
       @click="isDrawerShown = false">
       <v-icon>mdi-close</v-icon>
@@ -117,6 +127,7 @@
 
 {% include 'component/task-child-list.html' %}
 {% include 'component/task-attachment-list.html' %}
+{% include 'component/task-comment-list.html' %}
 
 <script type="module">
   Vue.component("task-detail-drawer", {
@@ -188,6 +199,8 @@
           row.taskMemberIdList = row.taskMemberIdList.split(',')
           row.taskChildList = JSON.parse(row.taskChildList || '[]')
           row.taskFileList = JSON.parse(row.taskFileList || '[]')
+          row.taskCommentList = JSON.parse(row.taskCommentList || '[]')
+          row.taskTag = row.taskTag ? (row.taskTag).split(',') : []
         })
 
         this.detail = rows[0] || {}
@@ -210,6 +223,8 @@
         data.taskContent = this.editor.getMarkdown()
         data.taskChildList = JSON.stringify(data.taskChildList)
         data.taskFileList = JSON.stringify(data.taskFileList)
+        data.taskCommentList = JSON.stringify(data.taskCommentList)
+        data.taskTag = data.taskTag.join(',')
 
         await window.jianghuAxios({
           data: {
@@ -271,6 +286,23 @@
         });
       },
       // ---------- <<<<<<<<<<<<< 编辑器 ----------
+
+      // ---------- 评论 >>>>>>>>>>>>> ----------
+      async postComment() {
+        const { id, ...data } = this.detail
+        data.taskCommentList = JSON.stringify(data.taskCommentList)
+        await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'allPage',
+              actionId: 'updateTask',
+              actionData: { taskCommentList: data.taskCommentList },
+              where: { id },
+            }
+          }
+        })
+      },
+      // ---------- <<<<<<<<<<<<< 评论 ----------
     }
   })
 </script>

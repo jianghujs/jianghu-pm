@@ -40,7 +40,7 @@
                         </v-list-item-action>
                       </v-list-item>
                       <div class="ma-4 pa-4" style="background-color: #f4f5f7;">
-                        <div>
+                        <div v-if="latestAffiche">
                           <p class="ma-0">{{latestAffiche.username}}</p>
                           <p class="ma-0 text-caption grey--text">{{latestAffiche.createAt}}</p>
                           <p class="ma-0 font-weight-bold mt-2">{{latestAffiche.content}}</p>
