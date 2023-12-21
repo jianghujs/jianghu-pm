@@ -40,7 +40,13 @@
                         </v-list-item-action>
                       </v-list-item>
                       <div class="ma-4 pa-4" style="background-color: #f4f5f7;">
-                        {{latestAffiche || '暂无公告'}}
+                        <div>
+                          <p class="ma-0">{{latestAffiche.username}}</p>
+                          <p class="ma-0 text-caption grey--text">{{latestAffiche.createAt}}</p>
+                          <p class="ma-0 font-weight-bold mt-2">{{latestAffiche.content}}</p>
+                        </div>
+                        <span v-else>暂无公告</span>
+
                       </div>
                     </v-card>
                   </v-col>
@@ -51,7 +57,7 @@
                         
                       </v-list-item>
                       <div class="ma-4 pa-4" style="background-color: #f4f5f7;">
-                        <v-row no-gutters>
+                        <v-row no-gutters v-if="projectDetail.id">
                         <v-col cols="12" sm="12" md="12">
                           <span class="jh-input-label grey--text">项目名称</span>
                           <div>{{projectDetail.projectName || '-'}}</div>
@@ -62,11 +68,15 @@
                         </v-col>
                         <v-col cols="12" sm="12" md="12">
                           <span class="jh-input-label grey--text">管理员</span>
-                          <div>{{projectDetail.taskMemberIdList || '-'}}</div>
+                          <div>{{projectDetail.projectManagerId || '-'}}</div>
                         </v-col>
                         <v-col cols="12" sm="12" md="12">
                           <span class="jh-input-label grey--text">项目进度</span>
-                          <div>{{projectDetail.taskContent || '-'}}</div>
+                          <div class="d-flex align-center">
+                            <v-progress-linear height="8" :value="(projectDetail.completedTasks/projectDetail.totalTasks)*100"></v-progress-linear>
+                            <span class="ml-2 font-weight-bold">{{parseInt((projectDetail.completedTasks/projectDetail.totalTasks)*100)}}%</span>
+                          </div>
+
                         </v-col>
                         <v-col cols="12" sm="12" md="12">
                           <span class="jh-input-label grey--text">项目成员</span>
@@ -472,7 +482,8 @@
         return this.tableDataFromBackend;
       },
       latestAffiche() {
-        return this.projectDetail.projectAfficheList && this.projectDetail.projectAfficheList.length ? this.projectDetail.projectAfficheList[0].content : null
+        const projectAfficheList = this.projectDetail.projectAfficheList
+        return projectAfficheList && projectAfficheList.length ? projectAfficheList[projectAfficheList.length - 1] : null
       }
     },
     watch: {},
@@ -534,6 +545,7 @@
             break;
           case 'addAffiche':
             await this.addAffiche(uiActionData);
+            await this.getProjectDetail();
             break;
           default:
             console.error("[doUiAction] uiActionId not find", { uiActionId });
@@ -678,15 +690,15 @@
         const result = await window.jianghuAxios({
           data: {
             appData: {
-              pageId: 'projectManagement',
-              actionId: 'selectItemList',
+              pageId: 'taskManagementOfOneProject',
+              actionId: 'getProjectList',
               where: { projectId: this.projectId },
               orderBy: [{ column: 'operationAt', order: 'desc' }]
             }
           }
         });
         const rows = result.data.appData.resultData.rows
-        rows.forEach(row=> {
+        rows.forEach(row => {
           row.projectAfficheList = JSON.parse(row.projectAfficheList || '[]')
         })
         this.projectDetail = rows[0] || {};
@@ -699,11 +711,13 @@
       },
       async addAffiche() {
         this.isAddAfficheDialogShown = false
-        
+
         const afficheList = [...this.projectDetail.projectAfficheList]
         afficheList.push({
           content: this.affiche,
           createAt: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+          userId: userInfo.userId,
+          username: userInfo.username,
         })
         await window.jianghuAxios({
           data: {
@@ -717,6 +731,7 @@
             }
           }
         });
+        await window.vtoast.success("新增公告成功");
       },
       // ---------- <<<<<<<<<<<<< 公告 ----------
     }
