@@ -252,7 +252,11 @@
                     </v-data-table>
                     <!-- 看板样式 -->
                     <div style="background-color: #eee;">
-                      <task-board-list :task-list.sync="tableDataFromBackend" v-show="taskViewStyle == 'board'" @update-task-status="doUiAction('updateTask', $event)" />
+                      <task-board-list
+                        :task-list.sync="tableDataFromBackend"
+                        v-show="taskViewStyle == 'board'" @update-task-status="doUiAction('updateTask', $event)"
+                        @click-task="doUiAction('startUpdateTask', {item: $event})"
+                      />
                     </div>
                   </v-card>
               </v-col>

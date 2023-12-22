@@ -9,8 +9,12 @@
         <draggable v-model="board" :list="column.items" group="tasks" @start="drag=true" @end="drag=false"
           @change="changeTaskStatus" style="overflow-y: auto; height: 100vh;background-color: #f4f5f7;" class="pa-2">
           <v-card class="mb-2 pa-3 task-item" v-for="(item, index) in column.items" :key="index">
-            <h3>{{ item.taskTitle }}</h3>
+            <h3 @click="$emit('click-task', item)">{{ item.taskTitle }}</h3>
+            <div>
+              <v-chip label x-small v-if="item.taskEndAt" color="grey lighten-3">{{item.taskEndAt}}截止</v-chip>
+            </div>
             <div class="mt-2">
+              
               <span>#{{ item.id }}</span>
               <span class="ml-1"><v-icon size="14"
                   :color="constantObj.taskLevel.find(l=> l.text==item.taskLevel).color">mdi-circle-medium</v-icon> {{
