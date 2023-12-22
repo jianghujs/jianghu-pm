@@ -117,18 +117,27 @@
               </v-col>
               <v-col cols="12" md="10">
                 <v-card>
-                  <v-row class="ma-0 pa-xs-4 align-center flex-none pt-0 ">
-                
+                  <v-row class="ma-0 pa-xs-4 align-center flex-none pt-0 pb-3">
                       <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-2">
                         <v-btn color="success" dark class="elevation-0 mr-2" @click="doUiAction('startCreateItem')" small>新增</v-btn>
                       </v-col>
                 
                       <v-spacer></v-spacer>
+
+                      <v-col cols="12" xs="12" sm="4" md="3" xl="2" class="pa-0 text-md-right">
+                        <v-btn-toggle :value="0" class="mr-1 mt-2 mt-md-0" color="success" small>
+                          <v-btn @click="taskViewStyle = 'list'" small>列表</v-btn>
+                          <v-btn @click="taskViewStyle = 'board'" small>看板</v-btn>
+                        </v-btn-toggle>
+                      </v-col>
                       <v-col cols="12" xs="3" sm="3" md="2" xl="2" class="pr-2 col-sm-8-flex">
                         <v-text-field v-model="searchInput" label="表格过滤" class="jh-v-input" dense filled single-line></v-text-field>
                       </v-col>
                     </v-row>
-                    <v-data-table 
+
+                    <!-- table样式 -->
+                    <v-data-table
+                        v-if="taskViewStyle == 'list'" 
                         fixed-header
                         :headers="headers"
                         :items="tableData"
@@ -241,6 +250,10 @@
                         <v-btn v-for="tableButton of tableButtonList" :color="tableButton.color" outlined x-small class="elevation-0 mr-2" @click="doUiAction(tableButton.action, {item, button: tableButton})">{{ tableButton.text }}</v-btn>
                       </template>
                     </v-data-table>
+                    <!-- 看板样式 -->
+                    <div style="background-color: #eee;">
+                      <task-board-list v-if="taskViewStyle == 'board'" />
+                    </div>
                   </v-card>
               </v-col>
             </v-row>
@@ -426,6 +439,7 @@
 
 {% block vueScript %}
 {% include 'component/task-detail-drawer.html' %}
+{% include 'component/task-board-list.html' %}
 {% include 'common/jianghuJs/fixedTableHeightV4.html' %}
 {% include 'common/constantUtil.html' %}'
 
@@ -500,9 +514,10 @@
       isAddAfficheDialogShown: false,
       affiche: null,
 
-      serverSearchInput: {
+      serverSearchInput: {},
 
-      }
+      // 显示样式，list, board
+      taskViewStyle: 'list',
     }),
     computed: {
       isMobile() {

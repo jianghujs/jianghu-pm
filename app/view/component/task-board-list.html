@@ -1,0 +1,65 @@
+<template id="task-board-list">
+
+  <div>
+    <v-row>
+      <v-col cols="12" sm="4" md="3" xl="2" v-for="(column, columnIndex) in board" :key="columnIndex">
+        <div class="pa-2">
+          <h3>{{column.name}}</h3>
+        </div>
+        <draggable v-model="board" :list="column.items" group="tasks" @start="drag=true" @end="drag=false" style="overflow-y: auto; height: 100vh;background-color: #f4f5f7;" class="pa-2">
+          <v-card class="mb-2 pa-3" v-for="(item, index) in column.items" :key="index">
+            <h3>{{ item.title }}</h3>
+            <div>
+              <span>#{{ item.id }}</span>
+              <span>{{ item.priority }}</span>
+              <span>{{ item.status }}</span>
+            </div>
+          </v-card>
+
+        </draggable>
+      </v-col>
+    </v-row>
+  </div>
+</template>
+
+
+<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
+<script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.20.0/vuedraggable.umd.min.js"></script>
+
+
+<script type="module">
+  Vue.component("task-board-list", {
+    template: '#task-board-list',
+    props: {
+
+    },
+    data: () => ({
+      board: [
+        {
+          name: '未开始',
+          items: [{ title: '任务 1', id: 1, priority: '高', status: '未开始', time: '2023-01-01' }, { title: '任务 11', id: 2, priority: '高', status: '未开始', time: '2023-01-01' }, { title: '任务 111', id: 3, priority: '高', status: '未开始', time: '2023-01-01' },{ title: '任务 111', id: 3, priority: '高', status: '未开始', time: '2023-01-01' },{ title: '任务 111', id: 3, priority: '高', status: '未开始', time: '2023-01-01' },{ title: '任务 111', id: 3, priority: '高', status: '未开始', time: '2023-01-01' },{ title: '任务 111', id: 3, priority: '高', status: '未开始', time: '2023-01-01' },]
+        },
+        {
+          name: '进行中',
+          items: [{ title: '任务 2', id: 2, priority: '中', status: '进行中', time: '2023-01-02' },]
+        },
+        {
+          name: '已完成',
+          items: [{ title: '任务 3', id: 3, priority: '低', status: '已完成', time: '2023-01-03' },]
+        }
+        // 可以添加更多自定义列
+      ],
+      drag: false
+    }),
+    created() {
+    },
+    methods: {
+
+    },
+  })
+</script>
+<style scoped>
+
+</style>

@@ -1,0 +1,120 @@
+<template id="task-table-list">
+
+<v-data-table fixed-header :headers="headers" :items="tableData" :search="searchInput"
+  :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1], itemsPerPageText: '每页行数', itemsPerPageAllText: '所有'}"
+  :items-per-page="20" mobile-breakpoint="0" :loading="isTableLoading" checkbox-color="success"
+  :class="{'zebraLine': showTableZebraLine }" class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
+  <template v-slot:footer.prepend>
+    <span class="ml-2 table-search-hint-text">共{{ tableData.length }}条记录</span>
+    <v-menu top offset-y :close-on-content-click="false">
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn v-bind="attrs" v-on="on" icon>
+          <v-icon>mdi-menu</v-icon>
+        </v-btn>
+      </template>
+      <v-list>
+        <v-list-item>
+          <v-switch v-model="showTableZebraLine" label="显示斑马纹" dense flat></v-switch>
+        </v-list-item>
+      </v-list>
+    </v-menu>
+  </template>
+  <template v-slot:footer.page-text="pagination">
+    <span>{{pagination.pageStart}}-{{pagination.pageStop}}</span>
+    <span class="ml-1">共{{pagination.itemsLength}}条</span>
+  </template>
+  <template v-slot:item.taskTitle="{ item }">
+    <a @click="doUiAction('startUpdateTask', { item })">{{ item.taskTitle }}</a>
+  </template>
+  <template v-slot:item.taskStatus="{ item }">
+    <v-select :items="constantObj.taskStatus" v-model="item.taskStatus" class="jh-v-input" dense filled single-line
+      @change="doUiAction('updateTask', { key: 'taskStatus', value: $event, item })">
+      <template v-slot:item="{ item }">
+        <v-chip :color="item.color" dark x-small>{{item.text}}</v-chip>
+      </template>
+      <template v-slot:selection="{ item }">
+        <v-chip :color="item.color" dark x-small>{{item.text}}</v-chip>
+      </template>
+
+    </v-select>
+  </template>
+  <template v-slot:item.taskLevel="{ item }">
+    <v-select :items="constantObj.taskLevel" v-model="item.taskLevel" class="jh-v-input" dense filled single-line
+      @change="doUiAction('updateTask', { key: 'taskLevel', value: $event, item })">
+      <template #prepend-inner>
+        <v-icon :color="constantObj.taskLevel.find(l=> l.text==item.taskLevel).color">mdi-circle-medium</v-icon>
+      </template>
+      <template v-slot:item="{ item }">
+        <v-icon :color="item.color">mdi-circle-medium</v-icon>
+        <span>{{item.text}}</span>
+      </template>
+    </v-select>
+  </template>
+  <template v-slot:item.taskManagerId="{ item }">
+
+    <v-autocomplete :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense single-line
+      filled v-model="item.taskManagerId"
+      @change="doUiAction('updateTask', { key: 'taskManagerId', value: $event, item })"></v-autocomplete>
+  </template>
+  <template v-slot:item.taskStartAt="{ item }">
+    <v-menu v-model="item.isStartAtMenuShown" :close-on-content-click="false" :nudge-right="40"
+      transition="scale-transition" offset-y min-width="auto">
+      <template v-slot:activator="{ on, attrs }">
+        <v-text-field class="jh-v-input" dense single-line filled v-model="item.taskStartAt" v-bind="attrs"
+          v-on="on"></v-text-field>
+      </template>
+      <v-date-picker v-model="item.taskStartAt"
+        @change="doUiAction('updateTask', { key: 'taskStartAt', value: $event, item })" no-title
+        scrollable></v-date-picker>
+    </v-menu>
+  </template>
+  <template v-slot:item.taskEndAt="{ item }">
+    <v-menu v-model="item.isEndAtMenuShown" :close-on-content-click="false" :nudge-right="40"
+      transition="scale-transition" offset-y min-width="auto">
+      <template v-slot:activator="{ on, attrs }">
+        <v-text-field class="jh-v-input" dense single-line filled v-model="item.taskEndAt" v-bind="attrs"
+          v-on="on"></v-text-field>
+      </template>
+      <v-date-picker v-model="item.taskEndAt"
+        @change="doUiAction('updateTask', { key: 'taskEndAt', value: $event, item })" no-title
+        scrollable></v-date-picker>
+    </v-menu>
+  </template>
+
+  <template v-slot:item.action="{ item }">
+    <v-btn v-for="tableButton of tableButtonList" :color="tableButton.color" outlined x-small class="elevation-0 mr-2"
+      @click="doUiAction(tableButton.action, {item, button: tableButton})">{{ tableButton.text }}</v-btn>
+  </template>
+</v-data-table>
+</template>
+
+<script type="module">
+  Vue.component("task-table-list", {
+    template: '#task-table-list',
+    props: {
+      headers: {
+        type: Array,
+        default: () => [],
+      },
+      headers: {
+        type: Array,
+        default: () => [],
+      },
+      searchInput: {
+        type: String,
+        default: '',
+      },
+    },
+    data: () => ({
+      showTableZebraLine: true,
+    }),
+    created() {
+    },
+    methods: {
+
+    },
+  })
+</script>
+<style scoped>
+
+</style>
