@@ -125,7 +125,7 @@
                       <v-spacer></v-spacer>
 
                       <v-col cols="12" xs="12" sm="4" md="3" xl="2" class="pa-0 text-md-right">
-                        <v-btn-toggle :value="1" class="mr-1 mt-2 mt-md-0" color="success" small>
+                        <v-btn-toggle v-model="taskViewStyleIndex" class="mr-1 mt-2 mt-md-0" color="success" small>
                           <v-btn @click="taskViewStyle = 'list'" small>列表</v-btn>
                           <v-btn @click="taskViewStyle = 'board'" small>看板</v-btn>
                         </v-btn-toggle>
@@ -522,6 +522,7 @@
 
       // 显示样式，list, board
       taskViewStyle: 'board',
+      taskViewStyleIndex: 1,
     }),
     computed: {
       isMobile() {
