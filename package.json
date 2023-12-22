@@ -21,10 +21,10 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "start": "egg-scripts start --daemon --port=7001 --title=306.jianghujs-pm",
-    "stop": "egg-scripts stop --title=306.jianghujs-pm",
-    "dev": "egg-bin dev --port=7001",
-    "debug": "egg-bin debug --port=7001",
+    "start": "egg-scripts start --daemon --port=7306 --title=jianghu-pm",
+    "stop": "egg-scripts stop --title=jianghu-pm",
+    "dev": "egg-bin dev --port=7306",
+    "debug": "egg-bin debug --port=7306",
     "autod": "autod"
   },
   "repository": {
