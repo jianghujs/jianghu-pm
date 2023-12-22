@@ -6,13 +6,18 @@
         <div class="pa-2">
           <h3>{{column.name}}</h3>
         </div>
-        <draggable v-model="board" :list="column.items" group="tasks" @start="drag=true" @end="drag=false" style="overflow-y: auto; height: 100vh;background-color: #f4f5f7;" class="pa-2">
-          <v-card class="mb-2 pa-3" v-for="(item, index) in column.items" :key="index">
-            <h3>{{ item.title }}</h3>
-            <div>
+        <draggable v-model="board" :list="column.items" group="tasks" @start="drag=true" @end="drag=false"
+          @change="changeTaskStatus" style="overflow-y: auto; height: 100vh;background-color: #f4f5f7;" class="pa-2">
+          <v-card class="mb-2 pa-3 task-item" v-for="(item, index) in column.items" :key="index">
+            <h3>{{ item.taskTitle }}</h3>
+            <div class="mt-2">
               <span>#{{ item.id }}</span>
-              <span>{{ item.priority }}</span>
-              <span>{{ item.status }}</span>
+              <span class="ml-1"><v-icon size="14"
+                  :color="constantObj.taskLevel.find(l=> l.text==item.taskLevel).color">mdi-circle-medium</v-icon> {{
+                item.taskLevel }}</span>
+
+              <v-chip class="ml-1" :color="constantObj.taskStatus.find(l=> l.text==item.taskStatus).color" dark
+                x-small>{{ item.taskStatus }}</v-chip>
             </div>
           </v-card>
 
@@ -23,9 +28,7 @@
 </template>
 
 
-<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
 <script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
-<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
 <script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.20.0/vuedraggable.umd.min.js"></script>
 
 
@@ -33,33 +36,57 @@
   Vue.component("task-board-list", {
     template: '#task-board-list',
     props: {
-
+      taskList: {
+        type: Array,
+        default: () => []
+      }
     },
     data: () => ({
-      board: [
-        {
-          name: '未开始',
-          items: [{ title: '任务 1', id: 1, priority: '高', status: '未开始', time: '2023-01-01' }, { title: '任务 11', id: 2, priority: '高', status: '未开始', time: '2023-01-01' }, { title: '任务 111', id: 3, priority: '高', status: '未开始', time: '2023-01-01' },{ title: '任务 111', id: 3, priority: '高', status: '未开始', time: '2023-01-01' },{ title: '任务 111', id: 3, priority: '高', status: '未开始', time: '2023-01-01' },{ title: '任务 111', id: 3, priority: '高', status: '未开始', time: '2023-01-01' },{ title: '任务 111', id: 3, priority: '高', status: '未开始', time: '2023-01-01' },]
-        },
-        {
-          name: '进行中',
-          items: [{ title: '任务 2', id: 2, priority: '中', status: '进行中', time: '2023-01-02' },]
-        },
-        {
-          name: '已完成',
-          items: [{ title: '任务 3', id: 3, priority: '低', status: '已完成', time: '2023-01-03' },]
-        }
-        // 可以添加更多自定义列
-      ],
-      drag: false
+      drag: false,
+      constantObj: constantObj,
+      board: [],
     }),
-    created() {
+    watch: {
+      taskList: {
+        handler: function (val, oldVal) {
+          this.buildBoard();
+        },
+        deep: true
+      }
     },
-    methods: {
 
+    methods: {
+      buildBoard() {
+        // 根据taskStatus来分组，使用loadsh
+        const grouped = {};
+
+        const defaultKeys = ['进行中', '未开始', '已完成'];
+        defaultKeys.forEach(key => {
+          if (!grouped.hasOwnProperty(key)) {
+            grouped[key] = this.taskList.filter(item => item.taskStatus === key);
+          }
+        });
+
+        this.board = _.map(grouped, (items, name) => ({ name, items }));
+      },
+      changeTaskStatus(event) {
+        const { added, removed } = event
+        this.board = this.board.map(column => {
+          if (added && column.items.includes(added.element)) {
+            added.element.taskStatus = column.name
+            this.$emit('update-task-status', { item: added.element, key: 'taskStatus', value: column.name })
+          }
+          if (removed && column.items.includes(removed.element)) {
+            removed.element.taskStatus = column.name
+          }
+          return column
+        })
+      }
     },
   })
 </script>
 <style scoped>
-
+  .task-item {
+    cursor: pointer;
+  }
 </style>

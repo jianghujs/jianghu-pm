@@ -125,7 +125,7 @@
                       <v-spacer></v-spacer>
 
                       <v-col cols="12" xs="12" sm="4" md="3" xl="2" class="pa-0 text-md-right">
-                        <v-btn-toggle :value="0" class="mr-1 mt-2 mt-md-0" color="success" small>
+                        <v-btn-toggle :value="1" class="mr-1 mt-2 mt-md-0" color="success" small>
                           <v-btn @click="taskViewStyle = 'list'" small>列表</v-btn>
                           <v-btn @click="taskViewStyle = 'board'" small>看板</v-btn>
                         </v-btn-toggle>
@@ -137,7 +137,7 @@
 
                     <!-- table样式 -->
                     <v-data-table
-                        v-if="taskViewStyle == 'list'" 
+                        v-show="taskViewStyle == 'list'" 
                         fixed-header
                         :headers="headers"
                         :items="tableData"
@@ -252,7 +252,7 @@
                     </v-data-table>
                     <!-- 看板样式 -->
                     <div style="background-color: #eee;">
-                      <task-board-list v-if="taskViewStyle == 'board'" />
+                      <task-board-list :task-list.sync="tableDataFromBackend" v-show="taskViewStyle == 'board'" @update-task-status="doUiAction('updateTask', $event)" />
                     </div>
                   </v-card>
               </v-col>
@@ -517,7 +517,7 @@
       serverSearchInput: {},
 
       // 显示样式，list, board
-      taskViewStyle: 'list',
+      taskViewStyle: 'board',
     }),
     computed: {
       isMobile() {
