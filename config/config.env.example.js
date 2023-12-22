@@ -32,7 +32,7 @@ module.exports = appInfo => {
           port: process.env.DB_PORT,
           user: process.env.DB_USER,
           password: process.env.DB_PASSWORD,
-          database: 'jianghu_erp'
+          database: 'jianghu_pm'
         },
         pool: { min: 0, max: 10 },
         acquireConnectionTimeout: 30000
