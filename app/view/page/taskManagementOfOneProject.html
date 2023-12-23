@@ -97,7 +97,7 @@
                           <span class="jh-input-label grey--text">项目进度</span>
                           <div class="d-flex align-center">
                             <v-progress-linear height="8" :value="(projectDetail.completedTasks/projectDetail.totalTasks)*100"></v-progress-linear>
-                            <span class="ml-2 font-weight-bold">{{parseInt((projectDetail.completedTasks/projectDetail.totalTasks)*100)}}%</span>
+                            <span class="ml-2 font-weight-bold">{{parseInt((projectDetail.completedTasks/projectDetail.totalTasks)*100) || 0}}%</span>
                           </div>
 
                         </v-col>
