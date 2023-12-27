@@ -1,389 +1,413 @@
-{% extends 'template/jhTemplateV4.html'%}
-{% block vueTemplate %}
+{% extends 'template/jhTemplateV4.html'%} {% block vueTemplate %}
 <!-- 3 table 下 project 的单表 crud 页面 -->
 
-
 <script type="text/html" id="app-template">
-    <div>
-        <v-app mobile-breakpoint="sm">
-            <jh-menu />
-            <v-main class="mt-15">
-                <!-- 头部内容 >>>>>>>>>>>>> -->
-                <div class="jh-page-second-bar px-8">
-                  <v-row>
-                    <v-col cols="12" xs="12" sm="12" md="4" xl="3">
-                      <div class="pt-3 text-h7 font-weight-bold">项目管理
-                        <!-- 帮助页按钮 -->
-                        <v-icon @click="isHelpPageDrawerShown = true" color="success" small>mdi-help-circle-outline
-                        </v-icon>
-                      </div>
-                      <v-breadcrumbs class="pb-3 pt-0 pl-0" :items="breadcrumbs" divider="-"></v-breadcrumbs>
-                    </v-col>
-                    <!-- 搜索条件表单 >>>>>>>> -->
-                    <v-col cols="12" xs="12" sm="12" md="8" xl="9">
-                      <v-row class="jh-backend-form-container justify-end ma-0 py-1 pb-xs-2">
-                        <v-col cols="12" xs="6" sm="6" md="4" xl="3" class="pa-xs-0 pb-2 pl-1 pl-xs-1">
-                          <v-select clearable v-model="serverSearchInput.projectGroup" color="success" prefix="分组：" class="jh-v-input bg-white" :items="constantObj.projectGroup" dense filled single-line></v-select>
-                        </v-col>
-                        <v-btn class="jh-backend-search-btn elevation-0 ml-0 mt-3" color="success" small @click="doUiAction('refreshTableData')">
-                          查询
-                        </v-btn>
+  <div>
+      <v-app mobile-breakpoint="sm">
+          <jh-menu />
+          <v-main class="mt-15">
+              <!-- 头部内容 >>>>>>>>>>>>> -->
+              <div class="jh-page-second-bar px-8">
+                <v-row>
+                  <v-col cols="12" xs="12" sm="12" md="4" xl="3">
+                    <div class="pt-3 text-h7 font-weight-bold">项目管理
+                      <!-- 帮助页按钮 -->
+                      <v-icon @click="isHelpPageDrawerShown = true" color="success" small>mdi-help-circle-outline
+                      </v-icon>
+                    </div>
+                    <v-breadcrumbs class="pb-3 pt-0 pl-0" :items="breadcrumbs" divider="-"></v-breadcrumbs>
+                  </v-col>
+                  <!-- 搜索条件表单 >>>>>>>> -->
+                  <v-col cols="12" xs="12" sm="12" md="8" xl="9">
+                    <v-row class="jh-backend-form-container justify-end ma-0 py-1 pb-xs-2">
+                      <v-col cols="12" xs="6" sm="6" md="4" xl="3" class="pa-xs-0 pb-2 pl-1 pl-xs-1">
+                        <v-select clearable v-model="serverSearchInput.projectGroup" color="success" prefix="分组：" class="jh-v-input bg-white" :items="constantObj.projectGroup" dense filled single-line></v-select>
+                      </v-col>
+                      <v-btn class="jh-backend-search-btn elevation-0 ml-0 mt-3" color="success" small @click="doUiAction('refreshTableData')">
+                        查询
+                      </v-btn>
+                    </v-row>
+                  </v-col>
+              </div>
+              <!-- <<<<<<<<<<<<< 头部内容 -->
+
+              <div class="jh-page-body-container px-8">
+                  <!-- 页面内容 >>>>>>>>>>>>> -->
+                  <v-card class="rounded-lg">
+                      <v-row class="ma-0 pa-4">
+                          <!--新增按钮-->
+                          <v-btn color="success" class="elevation-0 mr-2" @click="doUiAction('startCreateItem')"
+                              small>新增</v-btn>
+                          <v-spacer></v-spacer>
+                          <!--搜索过滤-->
+                          <v-col cols="12" xs="12" sm="4" md="3" xl="2" class="pa-0 text-md-right">
+                            <v-btn-toggle :value="0"  @change="doUiAction('useScene', sceneList[$event])" class="mr-2 mt-2 mt-md-0" color="success" small>
+                              <v-btn v-for="scene in sceneList" small>{{scene.name}}</v-btn>
+                            </v-btn-toggle>
+                          </v-col>
+
+                          <v-col cols="12" xs="8" sm="4" md="3" xl="2" class="pa-0">
+                              <v-text-field color="success" v-model="searchInput" prefix="搜索：" class="jh-v-input" dense
+                                  filled single-line></v-text-field>
+                          </v-col>
                       </v-row>
-                    </v-col>
-                </div>
-                <!-- <<<<<<<<<<<<< 头部内容 -->
-    
-                <div class="jh-page-body-container px-8">
-                    <!-- 页面内容 >>>>>>>>>>>>> -->
-                    <v-card class="rounded-lg">
-                        <v-row class="ma-0 pa-4">
-                            <!--新增按钮-->
-                            <v-btn color="success" class="elevation-0 mr-2" @click="doUiAction('startCreateItem')"
-                                small>新增</v-btn>
-                            <v-spacer></v-spacer>
-                            <!--搜索过滤-->
-                            <v-col cols="12" xs="12" sm="4" md="3" xl="2" class="pa-0 text-md-right">
-                              <v-btn-toggle :value="0"  @change="doUiAction('useScene', sceneList[$event])" class="mr-2 mt-2 mt-md-0" color="success" small>
-                                <v-btn v-for="scene in sceneList" small>{{scene.name}}</v-btn>
-                              </v-btn-toggle>
-                            </v-col>
+                      <!--表格-->
+                      <v-data-table :headers="headers" :items="tableData" :search="searchInput"
+                          :footer-props="{ itemsPerPageOptions: [20, 50, -1], itemsPerPageText: '每页行数', itemsPerPageAllText: '所有'}"
+                          :items-per-page="-1" mobile-breakpoint="0" :loading="isTableLoading"
+                          checkbox-color="success" fixed-header :class="{'zebraLine': isTableZebraLineShown }"
+                          class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
+                          <template v-slot:header.action="{ header }">
+                            <span class="ml-2">操作</span>
+                          </template>
+                          <!--表格行操作按钮-->
+                          <template v-slot:item.isMark="{ item }">
+                            <a @click="doUiAction('starProject', { item })">
+                              <v-icon v-if="item.isMark === '是'" color="#ffab00">mdi-star</v-icon>
+                              <v-icon v-else>mdi-star-outline</v-icon>
+                            </a>
+                          </template>
+                          <template v-slot:item.progress="{ item }">
+                            <div class="d-flex align-center">
+                              <v-progress-linear height="8" :value="(item.completedTasks/item.totalTasks)*100"></v-progress-linear>
+                              <span class="ml-2 font-weight-bold">{{item.completedTasks}}/{{item.inProgressTasks}}/{{item.notStartedTasks}}</span>
+                            </div>
+                          </template>
 
-                            <v-col cols="12" xs="8" sm="4" md="3" xl="2" class="pa-0">
-                                <v-text-field color="success" v-model="searchInput" prefix="搜索：" class="jh-v-input" dense
-                                    filled single-line></v-text-field>
-                            </v-col>
-                        </v-row>
-                        <!--表格-->
-                        <v-data-table :headers="headers" :items="tableData" :search="searchInput"
-                            :footer-props="{ itemsPerPageOptions: [20, 50, -1], itemsPerPageText: '每页行数', itemsPerPageAllText: '所有'}"
-                            :items-per-page="-1" mobile-breakpoint="0" :loading="isTableLoading"
-                            checkbox-color="success" fixed-header :class="{'zebraLine': isTableZebraLineShown }"
-                            class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
-                            <template v-slot:header.action="{ header }">
-                              <span class="ml-2">操作</span>
-                            </template>
-                            <!--表格行操作按钮-->
-                            <template v-slot:item.isMark="{ item }">
-                              <a @click="doUiAction('starProject', { item })">
-                                <v-icon v-if="item.isMark === '是'" color="#ffab00">mdi-star</v-icon>
-                                <v-icon v-else>mdi-star-outline</v-icon>
-                              </a>
-                            </template>
-                            <template v-slot:item.progress="{ item }">
-                              <div class="d-flex align-center">
-                                <v-progress-linear height="8" :value="(item.completedTasks/item.totalTasks)*100"></v-progress-linear>
-                                <span class="ml-2 font-weight-bold">{{item.completedTasks}}/{{item.inProgressTasks}}/{{item.notStartedTasks}}</span>
-                              </div>
-                            </template>
 
-                            
-                            <template v-slot:item.projectName="{ item }">
-                              <div class="d-flex align-center">
-                                <div v-if="item.projectIcon" class="mr-1 row-icon">
-                                  <v-icon color="blue" size="20">mdi-{{item.projectIcon}}</v-icon>
-                                </div>
-                                <a @click="doUiAction('redirect', { item, button: {path: 'taskManagementOfOneProject'} })">{{ item.projectName }}</a>
+                          <template v-slot:item.projectName="{ item }">
+                            <div class="d-flex align-center">
+                              <div v-if="item.projectIcon" class="mr-1 row-icon">
+                                <v-icon color="blue" size="20">mdi-{{item.projectIcon}}</v-icon>
                               </div>
-                            </template>
-                            <template v-slot:item.projectEndAt="{ item }">
-                              <v-chip v-if="item.projectEndAt" small>{{ item.projectEndAt }}截止</v-chip>
-                            </template>
-                            
-                            <template v-slot:item.action="{ item }">
-                              <v-btn v-for="tableButton of tableButtonList" :color="tableButton.color" outlined x-small class="elevation-0 mr-2" @click="doUiAction(tableButton.action, {item, button: tableButton})">{{ tableButton.text }}</v-btn>
-                              <v-menu offset-y>
+                              <a @click="doUiAction('redirect', { item, button: {path: 'taskManagementOfOneProject'} })">{{ item.projectName }}</a>
+                            </div>
+                          </template>
+                          <template v-slot:item.projectEndAt="{ item }">
+                            <v-chip :class="`${dayjs(item.projectEndAt).isBefore(dayjs()) ? 'red' : '#ebecf0'}--text font-weight-bold`" v-if="item.projectEndAt" small>{{ item.projectEndAt }}截止</v-chip>
+                          </template>
+
+                          <template v-slot:item.action="{ item }">
+                            <template v-for="tableButton of tableButtonList">
+                              <v-menu v-if="tableButton.text=='操作'" offset-y>
                                 <template v-slot:activator="{ on, attrs }">
-                                  <v-btn color="grey" x-small outlined v-bind="attrs" v-on="on">
-                                    <v-icon size="14" class="grey--text">mdi-chevron-down</v-icon>更多
-                                  </v-btn>
+                                  <span role="button" :class="`${tableButton.color}--text jh-font-size-3 pr-2`" v-bind="attrs" v-on="on">
+                                    <v-icon size="14" :class="`${tableButton.color}--text`">{{tableButton.icon}}</v-icon>{{tableButton.text}}
+                                  </span>
                                 </template>
                                 <v-list>
-                                  <v-list-item @click="doUiAction('deleteProject', { item, text: '删除' })">
-                                    <v-list-item-title>删除</v-list-item-title>
-                                  </v-list-item>
-                                  <v-list-item @click="doUiAction('archiveProject', { item, text: '归档' })">
-                                    <v-list-item-title>归档</v-list-item-title>
+                                  <v-list-item
+                                  v-for="moreButton in tableButton.list"
+                                  @click="doUiAction(moreButton.action, { item, text: moreButton.text })">
+                                    <v-list-item-title>{{moreButton.text}}</v-list-item-title>
                                   </v-list-item>
                                 </v-list>
                               </v-menu>
 
+                              <span v-else role="button" :class="`${tableButton.color}--text jh-font-size-3 pr-2`" @click="doUiAction(tableButton.action, {item, button: tableButton})">
+                                <v-icon size="14" :class="`${tableButton.color}--text`" v-if="tableButton.icon">{{tableButton.icon}}</v-icon>{{tableButton.text}}
+                              </span>
                             </template>
-                            <!--没有数据-->
-                            <template v-slot:loading>
-                              <div class="jh-no-data">数据加载中</div>
-                            </template>
-                            <template v-slot:no-data>
-                              <div class="jh-no-data">暂无数据</div>
-                            </template>
-                            <template v-slot:no-results>
-                              <div class="jh-no-data">暂无数据</div>
-                            </template>
-                            <!--表格分页-->
-                            <template v-slot:footer.page-text="pagination">
-                              <span>{{pagination.pageStart}}-{{pagination.pageStop}}</span>
-                              <span class="ml-1">共{{pagination.itemsLength}}条</span>
-                            </template>
-                        </v-data-table>
-                    </v-card>
-                    <!-- <<<<<<<<<<<<< 页面内容 -->
-    
-                    <!--新增抽屉-->
-                    <v-navigation-drawer v-model="isAddDrawerShow" v-click-outside="drawerClickOutside" fixed temporary
-                        right width="80%" class="elevation-24">
-                        <v-form ref="createForm" lazy-validation>
-                            <!--抽屉标题-->
-                          
-                            <v-row no-gutters>
-                            <span class="text-h7 font-weight-bold pa-4">添加信息</span>
+                          </template>
+                          <!--没有数据-->
+                          <template v-slot:loading>
+                            <div class="jh-no-data">数据加载中</div>
+                          </template>
+                          <template v-slot:no-data>
+                            <div class="jh-no-data">暂无数据</div>
+                          </template>
+                          <template v-slot:no-results>
+                            <div class="jh-no-data">暂无数据</div>
+                          </template>
+                          <!--表格分页-->
+                          <template v-slot:footer.page-text="pagination">
+                            <span>{{pagination.pageStart}}-{{pagination.pageStop}}</span>
+                            <span class="ml-1">共{{pagination.itemsLength}}条</span>
+                          </template>
+                      </v-data-table>
+                  </v-card>
+                  <!-- <<<<<<<<<<<<< 页面内容 -->
+
+                  <!--新增抽屉-->
+                  <v-navigation-drawer v-model="isAddDrawerShow" v-click-outside="drawerClickOutside" fixed temporary
+                      right width="80%" class="elevation-24">
+                      <v-form ref="createForm" lazy-validation>
+                          <!--抽屉标题-->
+
+                          <v-row no-gutters>
+                          <span class="text-h7 font-weight-bold pa-4">添加信息</span>
+                          </v-row>
+                          <v-divider class="jh-divider"></v-divider>
+                          <!--抽屉表单-->
+                          <v-row class="ma-0">
+
+
+                            <v-col cols="12" sm="12" md="4" xl="3">
+                              <span class="jh-input-label"><span class="red--text">*</span>项目名称</span>
+                              <v-text-field  :rules="requireRules" class="jh-v-input " dense filled single-line v-model="addItem.projectName"></v-text-field>
+                            </v-col>
+
+                            <v-col cols="12" sm="12" md="4" xl="3">
+                              <span class="jh-input-label">项目图标</span>
+
+                              <v-menu
+                                :nudge-right="40"
+                                transition="scale-transition"
+                                offset-y
+                                min-width="auto"
+                                max-width="20%"
+                                max-height="60%"
+                              >
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-text-field
+                                    class="jh-v-input"
+                                    dense
+                                    single-line
+                                    filled
+                                    v-model="addItem.projectIcon"
+                                    v-bind="attrs"
+                                    v-on="on"
+                                  >
+                                  <template #prepend-inner>
+                                    <v-icon>mdi-{{addItem.projectIcon}}</v-icon>
+                                  </template>
+                                  <template v-slot:append>
+                                    <v-icon>mdi-menu-down</v-icon>
+                                  </template>
+                                </v-text-field>
+                                </template>
+                                <v-card>
+                                  <div class="d-flex flex-wrap">
+                                    <div v-for="icon in materialDesignIcons" :class="`item-icon pa-2 ${addItem.projectIcon == icon && 'green'}`" @click="addItem.projectIcon=icon">
+                                      <v-btn x-small icon> <v-icon>mdi-{{icon}}</v-icon></v-btn>
+                                    </div>
+                                  </div>
+                                </v-card>
+                              </v-menu>
+                            </v-col>
+                            <v-col cols="12" sm="12" md="4" xl="3">
+                              <span class="jh-input-label">项目分组</span>
+                              <v-text-field class="jh-v-input " dense filled single-line v-model="addItem.projectGroup">
+                                <template v-slot:append>
+                                  <v-icon>mdi-menu-down</v-icon>
+                                </template>
+
+                              </v-text-field>
+                            </v-col>
+
+
+                            
+
+                            <v-col cols="12" sm="12" md="4" xl="3">
+                              <span class="jh-input-label">项目开始时间</span>
+                              <!-- 时间选择 -->
+                              <v-menu
+                                v-model="isProjectStartAtMenuShown"
+                                :close-on-content-click="false"
+                                :nudge-right="40"
+                                transition="scale-transition"
+                                offset-y
+                                min-width="auto"
+                              >
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-text-field
+
+                                    class="jh-v-input"
+                                    dense
+                                    single-line
+                                    filled
+                                    v-model="addItem.projectStartAt"
+                                    v-bind="attrs"
+                                    v-on="on"
+                                  ></v-text-field>
+                                </template>
+                                <v-date-picker v-model="addItem.projectStartAt" no-title scrollable></v-date-picker>
+                              </v-menu>
+                            </v-col>
+
+
+                            <v-col cols="12" sm="12" md="4" xl="3">
+                              <span class="jh-input-label">项目截止时间</span>
+                              <v-menu :close-on-content-click="false" v-model="isProjectEndAtMenuShown" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-text-field class="jh-v-input" dense single-line filled v-model="addItem.projectEndAt" v-bind="attrs" v-on="on"></v-text-field>
+                                </template>
+                                <v-date-picker v-model="addItem.projectEndAt" no-title scrollable>
+                                </v-date-picker>
+                              </v-menu>
+                            </v-col>
+
+
+
+                            <v-col cols="12" sm="12" md="4" xl="3">
+                              <span class="jh-input-label">项目成员列表</span>
+                              <v-autocomplete multiple :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense single-line filled v-model="addItem.projectMemberIdList"></v-autocomplete>
+                            </v-col>
+
+                            <v-col cols="12" sm="12" md="12" xl="12">
+                              <span class="jh-input-label">项目描述</span>
+                              <v-textarea class="jh-v-input " dense filled single-line v-model="addItem.projectDesc"></v-textarea>
+                            </v-col>
+                          </v-row>
+                          <!--抽屉操作按钮-->
+                          <v-row class="justify-end mx-0 mt-8 px-2">
+                            <v-btn class="mr-2" @click="isAddDrawerShow = false" small>取消</v-btn>
+                              <v-btn color="success" @click="doUiAction('createItem')" small>保存</v-btn>
+                          </v-row>
+                      </v-form>
+                      <!--抽屉关闭按钮-->
+                      <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
+                          @click="isAddDrawerShow = false">
+                          <v-icon>mdi-close</v-icon>
+                      </v-btn>
+                  </v-navigation-drawer>
+
+                  <!--编辑抽屉-->
+                  <v-navigation-drawer v-model="isEditDrawerShow" v-click-outside="drawerClickOutside" fixed temporary
+                      right width="80%" class="elevation-24">
+                      <v-form ref="editForm" lazy-validation>
+                          <!--抽屉标题-->
+
+                          <v-row no-gutters>
+                            <span class="text-h7 font-weight-bold pa-4">修改信息</span>
                             </v-row>
                             <v-divider class="jh-divider"></v-divider>
-                            <!--抽屉表单-->
-                            <v-row class="ma-0">
-                               
-                           
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label"><span class="red--text">*</span>项目名称</span>
-                                <v-text-field  :rules="requireRules" class="jh-v-input " dense filled single-line v-model="addItem.projectName"></v-text-field>
-                              </v-col>
-                               
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目图标</span>
+                          <!--抽屉表单-->
+                          <v-row class="mt-0 px-6">
 
-                                <v-menu 
-                                  :nudge-right="40" 
-                                  transition="scale-transition" 
-                                  offset-y 
-                                  min-width="auto"
-                                  max-width="20%"
-                                  max-height="60%"
-                                >
-                                  <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field 
-                                      class="jh-v-input" 
-                                      dense 
-                                      single-line 
-                                      filled 
-                                      v-model="addItem.projectIcon" 
-                                      v-bind="attrs"
-                                      v-on="on"
-                                    ></v-text-field>
+                            <v-col cols="12" sm="12" md="4" xl="3">
+                              <span class="jh-input-label"><span class="red--text">*</span>项目名称</span>
+                              <v-text-field :rules="requireRules" class="jh-v-input " dense filled single-line v-model="editItem.projectName"></v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="12" md="4" xl="3">
+                              <span class="jh-input-label">项目图标</span>
+
+                              <v-menu
+                                :nudge-right="40"
+                                transition="scale-transition"
+                                offset-y
+                                min-width="auto"
+                                max-width="20%"
+                                max-height="60%"
+                              >
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-text-field
+                                    class="jh-v-input"
+                                    dense
+                                    single-line
+                                    filled
+                                    v-model="editItem.projectIcon"
+                                    v-bind="attrs"
+                                    v-on="on"
+                                  >
+                                  <template #prepend-inner>
+                                    <v-icon>mdi-{{editItem.projectIcon}}</v-icon>
                                   </template>
-                                  <v-card>
-                                    <div class="d-flex flex-wrap">
-                                      <div v-for="icon in materialDesignIcons" :class="`item-icon pa-2 ${addItem.projectIcon == icon && 'green'}`" @click="addItem.projectIcon=icon">
-                                        <v-btn x-small icon> <v-icon>mdi-{{icon}}</v-icon></v-btn>
-                                      </div>
+                                  <template v-slot:append>
+                                    <v-icon>mdi-menu-down</v-icon>
+                                  </template>
+                                </v-text-field>
+                                </template>
+                                <v-card>
+                                  <div class="d-flex flex-wrap">
+                                    <div v-for="icon in materialDesignIcons" :class="`item-icon pa-2 ${editItem.projectIcon == icon && 'green'}`" @click="editItem.projectIcon=icon">
+                                      <v-btn x-small icon> <v-icon>mdi-{{icon}}</v-icon></v-btn>
                                     </div>
-                                  </v-card>
-                                </v-menu>
-                              </v-col>
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目分组</span>
-                                <v-text-field class="jh-v-input " dense filled single-line v-model="addItem.projectGroup"></v-text-field>
-                              </v-col>
+                                  </div>
+                                </v-card>
+                              </v-menu>
 
-                               
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目描述</span>
-                                <v-text-field class="jh-v-input " dense filled single-line v-model="addItem.projectDesc"></v-text-field>
-                              </v-col>
+                            </v-col>
 
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目开始时间</span>
-                                <!-- 时间选择 -->
-                                <v-menu 
-                                  v-model="isProjectStartAtMenuShown" 
-                                  :close-on-content-click="false"
-                                  :nudge-right="40" 
-                                  transition="scale-transition" 
-                                  offset-y 
-                                  min-width="auto"
-                                >
-                                  <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field 
-                                      append-icon="mdi-calendar" 
-                                      class="jh-v-input" 
-                                      dense 
-                                      single-line 
-                                      filled 
-                                      v-model="addItem.projectStartAt" 
-                                      v-bind="attrs" 
-                                      v-on="on"
-                                    ></v-text-field>
-                                  </template>
-                                  <v-date-picker v-model="addItem.projectStartAt" no-title scrollable></v-date-picker>
-                                </v-menu>
-                              </v-col>
-                              
-                               
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目截止时间</span>
-                                <v-menu :close-on-content-click="false" v-model="isProjectEndAtMenuShown" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
-                                  <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field append-icon="mdi-calendar" class="jh-v-input" dense single-line filled v-model="addItem.projectEndAt" v-bind="attrs" v-on="on"></v-text-field>
-                                  </template>
-                                  <v-date-picker v-model="addItem.projectEndAt" no-title scrollable>
-                                  </v-date-picker>
-                                </v-menu>
-                              </v-col>
+                            <v-col cols="12" sm="12" md="4" xl="3">
+                              <span class="jh-input-label">项目分组</span>
+                              <v-text-field class="jh-v-input " dense filled single-line v-model="editItem.projectGroup">
+                                <template v-slot:append>
+                                  <v-icon>mdi-menu-down</v-icon>
+                                </template>
+                              </v-text-field>
+                            </v-col>
+                            
 
-                              
-                               
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目成员列表</span>
-                                <v-autocomplete multiple :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense single-line filled v-model="addItem.projectMemberIdList"></v-autocomplete>
-                              </v-col>
-                               
-                               
-                            </v-row>
-                            <!--抽屉操作按钮-->
-                            <v-row class="justify-end mx-0 mt-8 px-6">
-                                <v-btn color="success" @click="doUiAction('createItem')" small>保存</v-btn>
-                                <v-btn class="ml-2" @click="isAddDrawerShow = false" small>取消</v-btn>
-                            </v-row>
-                        </v-form>
-                        <!--抽屉关闭按钮-->
-                        <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
-                            @click="isAddDrawerShow = false">
-                            <v-icon>mdi-close</v-icon>
-                        </v-btn>
-                    </v-navigation-drawer>
+                            <v-col cols="12" sm="12" md="4" xl="3">
+                              <span class="jh-input-label">项目开始时间</span>
+                              <!-- 时间选择 -->
+                              <v-menu :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-text-field class="jh-v-input" dense single-line filled v-model="editItem.projectStartAt" v-bind="attrs" v-on="on"></v-text-field>
+                                </template>
+                                <v-date-picker v-model="editItem.projectStartAt" no-title scrollable>
+                                </v-date-picker>
+                              </v-menu>
+                            </v-col>
 
-                    <!--编辑抽屉-->
-                    <v-navigation-drawer v-model="isEditDrawerShow" v-click-outside="drawerClickOutside" fixed temporary
-                        right width="80%" class="elevation-24">
-                        <v-form ref="editForm" lazy-validation>
-                            <!--抽屉标题-->
-                           
-                            <v-row no-gutters>
-                              <span class="text-h7 font-weight-bold pa-4">修改信息</span>
-                              </v-row>
-                              <v-divider class="jh-divider"></v-divider>
-                            <!--抽屉表单-->
-                            <v-row class="mt-0 px-6">
-                               
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label"><span class="red--text">*</span>项目名称</span>
-                                <v-text-field :rules="requireRules" class="jh-v-input " dense filled single-line v-model="editItem.projectName"></v-text-field>
-                              </v-col> 
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目图标</span>
-                                
-                                <v-menu 
-                                  :nudge-right="40" 
-                                  transition="scale-transition" 
-                                  offset-y 
-                                  min-width="auto"
-                                  max-width="20%"
-                                  max-height="60%"
-                                >
-                                  <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field 
-                                      class="jh-v-input" 
-                                      dense 
-                                      single-line 
-                                      filled 
-                                      v-model="editItem.projectIcon" 
-                                      v-bind="attrs"
-                                      v-on="on"
-                                    ></v-text-field>
-                                  </template>
-                                  <v-card>
-                                    <div class="d-flex flex-wrap">
-                                      <div v-for="icon in materialDesignIcons" :class="`item-icon pa-2 ${editItem.projectIcon == icon && 'green'}`" @click="editItem.projectIcon=icon">
-                                        <v-btn x-small icon> <v-icon>mdi-{{icon}}</v-icon></v-btn>
-                                      </div>
-                                    </div>
-                                  </v-card>
-                                </v-menu>
-                                
-                              </v-col>
-                               
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目分组</span>
-                                <v-text-field class="jh-v-input " dense filled single-line v-model="editItem.projectGroup"></v-text-field>
-                              </v-col> 
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目描述</span>
-                                <v-text-field class="jh-v-input " dense filled single-line v-model="editItem.projectDesc"></v-text-field>
-                              </v-col> 
+                            <v-col cols="12" sm="12" md="4" xl="3">
+                              <span class="jh-input-label">项目截止时间</span>
+                              <v-menu :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-text-field class="jh-v-input" dense single-line filled v-model="editItem.projectEndAt" v-bind="attrs" v-on="on"></v-text-field>
+                                </template>
+                                <v-date-picker v-model="editItem.projectEndAt" no-title scrollable>
 
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目开始时间</span>
-                                <!-- 时间选择 -->
-                                <v-menu :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
-                                  <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field append-icon="mdi-calendar" class="jh-v-input" dense single-line filled v-model="editItem.projectStartAt" v-bind="attrs" v-on="on"></v-text-field>
-                                  </template>
-                                  <v-date-picker v-model="editItem.projectStartAt" no-title scrollable>
-                                  </v-date-picker>
-                                </v-menu>
-                              </v-col>
-                               
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目截止时间</span>
-                                <v-menu :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
-                                  <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field append-icon="mdi-calendar" class="jh-v-input" dense single-line filled v-model="editItem.projectEndAt" v-bind="attrs" v-on="on"></v-text-field>
-                                  </template>
-                                  <v-date-picker v-model="editItem.projectEndAt" no-title scrollable>
+                                </v-date-picker>
+                              </v-menu>
+                            </v-col>
 
-                                  </v-date-picker>
-                                </v-menu>
-                              </v-col>
-                              
-                             
-                              <v-col cols="12" sm="12" md="4" xl="3">
-                                <span class="jh-input-label">项目成员列表</span>
-                                <v-autocomplete multiple :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense single-line filled v-model="editItem.projectMemberIdList"></v-autocomplete>
-                              </v-col>
-                            </v-row>
-                            <!--抽屉操作按钮-->
-                            <v-row class="justify-end mx-0 mt-8 px-6">
-                                <v-btn color="success" small @click="doUiAction('updateItem')">保存</v-btn>
-                                <v-btn class="ml-2" small @click="isEditDrawerShow = false">取消
-                                </v-btn>
-                            </v-row>
-                        </v-form>
-    
-                        <!--抽屉关闭按钮-->
-                        <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
-                            @click="isEditDrawerShow = false">
-                            <v-icon>mdi-close</v-icon>
-                        </v-btn>
-                    </v-navigation-drawer>
 
-                 
-                </div>
-    
-                <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
-                <v-navigation-drawer v-model="isHelpPageDrawerShow" v-click-outside="drawerClickOutside" fixed temporary
-                    right width="80%" class="elevation-24">
-                    <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#1.classList.md`" width="100%"
-                        height="100%"></iframe>
-    
-                    <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
-                        @click="isHelpPageDrawerShow = false">
-                        <v-icon>mdi-close</v-icon>
-                    </v-btn>
-                </v-navigation-drawer>
-                <!-- <<<<<<<<<<<<< 帮助页抽屉 -->
-    
-            </v-main>
-        </v-app>
-    
-        <jh-toast />
-        <jh-mask />
-        <jh-confirm-dialog />
-    
-    </div>
+                            <v-col cols="12" sm="12" md="4" xl="3">
+                              <span class="jh-input-label">项目成员列表</span>
+                              <v-autocomplete multiple :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense single-line filled v-model="editItem.projectMemberIdList"></v-autocomplete>
+                            </v-col>
+
+                            <v-col cols="12" sm="12" md="12" xl="12">
+                              <span class="jh-input-label">项目描述</span>
+                              <v-textarea class="jh-v-input " dense filled single-line v-model="editItem.projectDesc"></v-textarea>
+                            </v-col>
+                          </v-row>
+                          <!--抽屉操作按钮-->
+                          <v-row class="justify-end mx-0 mt-8 px-6">
+                            <v-btn class="mr-2" small @click="isEditDrawerShow = false">取消
+                          </v-btn>
+                            <v-btn color="success" small @click="doUiAction('updateItem')">保存</v-btn>
+                          </v-row>
+                      </v-form>
+
+                      <!--抽屉关闭按钮-->
+                      <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
+                          @click="isEditDrawerShow = false">
+                          <v-icon>mdi-close</v-icon>
+                      </v-btn>
+                  </v-navigation-drawer>
+
+
+              </div>
+
+              <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
+              <v-navigation-drawer v-model="isHelpPageDrawerShow" v-click-outside="drawerClickOutside" fixed temporary
+                  right width="80%" class="elevation-24">
+                  <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#1.classList.md`" width="100%"
+                      height="100%"></iframe>
+
+                  <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
+                      @click="isHelpPageDrawerShow = false">
+                      <v-icon>mdi-close</v-icon>
+                  </v-btn>
+              </v-navigation-drawer>
+              <!-- <<<<<<<<<<<<< 帮助页抽屉 -->
+
+          </v-main>
+      </v-app>
+
+      <jh-toast />
+      <jh-mask />
+      <jh-confirm-dialog />
+
+  </div>
 </script>
 
-<div id="app">
-</div>
+<div id="app"></div>
 
-{% endblock %}
-{% block vueScript %}
+{% endblock %} {% block vueScript %}
 
 <!-- 加载页面组件 >>>>>>>>>>>>> -->
 {% include 'common/jianghuJs/fixedTableHeightV4.html' %}
@@ -402,46 +426,56 @@
         {
           text: '项目管理',
           disabled: true,
-        }
+        },
       ],
       isHelpPageDrawerShow: false,
       isTableZebraLineShown: true,
       // 表格相关数据
       isFormValid: true,
-      requireRules: [
-        v => !!v || '必填',
-      ],
-      constantCollection: {
-      },
+      requireRules: [(v) => !!v || '必填'],
+      constantCollection: {},
       serverSearchInput: {
         projectGroup: null,
         isArchive: '否',
         isDelete: '否',
       },
       constantObj: {
-        projectGroup: [
-          { text: '全部', value: null },
-        ]
+        projectGroup: [{ text: '全部', value: null }],
       },
       searchInput: null,
       isTableLoading: true,
       tableDataFromBackend: [],
       headers: [
-        { text: "", value: "isMark", width: 0 },
-        { text: "项目名称", value: "projectName", width: 120 },
-        { text: "完成度", value: "progress", width: 120 },
-        { text: "截止时间", value: "projectEndAt", width: 120 },
-        { text: "创建时间", value: "projectCreateAt", width: 120 },
-        { text: "管理员", value: "projectManagerId", width: 120 },
-        { text: '操作', value: 'action', align: 'center', sortable: false, width: 250, class: 'fixed', cellClass: 'fixed' },
-
+        { text: '', value: 'isMark', width: 0 },
+        { text: '项目名称', value: 'projectName', width: 120 },
+        { text: '完成度', value: 'progress', width: 120 },
+        { text: '截止时间', value: 'projectEndAt', width: 120 },
+        { text: '创建时间', value: 'projectCreateAt', width: 120 },
+        { text: '管理员', value: 'projectManagerId', width: 120 },
+        {
+          text: '操作',
+          value: 'action',
+          align: 'center',
+          sortable: false,
+          width: 250,
+          class: 'fixed',
+          cellClass: 'fixed',
+        },
       ],
       isEditDrawerShow: false,
       editItem: {},
       isAddDrawerShow: false,
       addItem: {},
       tableButtonList: [
-        { text: '设置', buttonType: 'edit', color: 'success', action: 'startUpdateItem' },
+        {
+          text: '设置',
+          buttonType: 'edit',
+          icon: 'mdi-cog',
+          color: 'success',
+          action: 'startUpdateItem',
+        },
+        { text: '删除', action: 'deleteProject', icon: 'mdi-delete', color: 'red' },
+        { text: '归档', action: 'archiveProject', icon: 'mdi-folder', color: 'blue' },
       ],
 
       isProjectEndAtMenuShown: false,
@@ -450,20 +484,19 @@
 
       sceneList: [
         {
-          "form": { projectManagerId: window.userInfo.userId, },
-          "name": "我管理的",
-          "id": "scene-fixed-1"
+          form: { projectManagerId: window.userInfo.userId },
+          name: '我管理的',
+          id: 'scene-fixed-1',
         },
         {
-          "form": { projectMemberIdList: `%${window.userInfo.userId}%`, },
-          "name": "我参与的",
-          "id": "scene-fixed-2"
+          form: { projectMemberIdList: `%${window.userInfo.userId}%` },
+          name: '我参与的',
+          id: 'scene-fixed-2',
         },
       ],
       currentSceneId: null,
 
       materialDesignIcons: materialDesignIcons,
-
     }),
     computed: {
       isMobile() {
@@ -478,7 +511,7 @@
       await this.doUiAction('refreshTableData');
       await this.doUiAction('getUserList');
     },
-    mounted() { },
+    mounted() {},
     methods: {
       async doUiAction(uiActionId, uiActionData) {
         switch (uiActionId) {
@@ -523,12 +556,12 @@
             await this.refreshTableData();
             break;
           case 'deleteProject':
-            await this.confirmUpdateItemDialog(uiActionData.text);
+            await this.confirmUpdateItemDialog(uiActionData.button.text);
             await this.deleteProject(uiActionData);
             await this.refreshTableData();
             break;
           case 'archiveProject':
-            await this.confirmUpdateItemDialog(uiActionData.text);
+            await this.confirmUpdateItemDialog(uiActionData.button.text);
             await this.archiveProject(uiActionData);
             await this.refreshTableData();
             break;
@@ -536,18 +569,21 @@
             await this.starProject(uiActionData);
             break;
           default:
-            console.error("[doUiAction] uiActionId not find", { uiActionId });
+            console.error('[doUiAction] uiActionId not find', { uiActionId });
             break;
         }
       },
       /**
        * uiActionId:  refreshTableData
        * description: ✅获取表格数据
-      */
+       */
       async refreshTableData() {
         this.isTableLoading = true;
 
-        const serverSearchInput = _.pickBy(this.serverSearchInput, value => !!value);
+        const serverSearchInput = _.pickBy(
+          this.serverSearchInput,
+          (value) => !!value
+        );
         const result = await window.jianghuAxios({
           data: {
             appData: {
@@ -556,46 +592,50 @@
               actionData: {},
               where: {},
               whereLike: serverSearchInput,
-              orderBy: [{ column: 'isMark', order: 'desc' }]
-            }
-          }
+              orderBy: [{ column: 'isMark', order: 'desc' }],
+            },
+          },
         });
         const { rows } = result.data.appData.resultData;
 
         // 分组构建，合并rows里的projectGroup
         const projectGroup = _.groupBy(rows, 'projectGroup');
         let projectGroupList = Object.keys(projectGroup);
-        this.constantObj.projectGroup = this.constantObj.projectGroup.concat(projectGroupList.map(item => ({ text: item, value: item })));
+        this.constantObj.projectGroup = this.constantObj.projectGroup.concat(
+          projectGroupList.map((item) => ({ text: item, value: item }))
+        );
 
-        rows.forEach(row => {
-          row.projectMemberIdList = (row.projectMemberIdList || '').split(',')
-        })
+        rows.forEach((row) => {
+          row.projectMemberIdList = (row.projectMemberIdList || '').split(',');
+        });
 
         this.tableDataFromBackend = rows;
         this.isTableLoading = false;
       },
       async getUserList() {
-        const rows = (await window.jianghuAxios({
-          data: {
-            appData: {
-              pageId: 'allPage',
-              actionId: 'getUserList',
-              actionData: {},
-              orderBy: [{ column: 'operationAt', order: 'desc' }]
-            }
-          }
-        })).data.appData.resultData.rows;
+        const rows = (
+          await window.jianghuAxios({
+            data: {
+              appData: {
+                pageId: 'allPage',
+                actionId: 'getUserList',
+                actionData: {},
+                orderBy: [{ column: 'operationAt', order: 'desc' }],
+              },
+            },
+          })
+        ).data.appData.resultData.rows;
         this.userList = rows;
       },
 
       /**
        * uiActionId:  startCreateItem
        * description: ✅获取表格数据
-      */
+       */
       async clearItemData() {
         this.addItem = {
           projectManagerId: window.userInfo.userId,
-          projectMemberIdList: [window.userInfo.userId]
+          projectMemberIdList: [window.userInfo.userId],
         };
       },
 
@@ -605,32 +645,37 @@
 
       // 表单验证
       async prepareCreateValidate() {
-        if (await this.$refs.createForm.validate() === false) {
-          throw new Error("[prepareCreateValidate] false");
+        if ((await this.$refs.createForm.validate()) === false) {
+          throw new Error('[prepareCreateValidate] false');
         }
       },
       async prepareEditValidate() {
-        if (await this.$refs.editForm.validate() === false) {
-          throw new Error("[prepareEditValidate] false");
+        if ((await this.$refs.editForm.validate()) === false) {
+          throw new Error('[prepareEditValidate] false');
         }
       },
 
       /**
        * uiActionId:  createItem
        * description: ✅获取表格数据
-      */
+       */
       async confirmCreateItemDialog() {
-        if (await window.confirmDialog({ title: "新增", content: "确定新增吗？" }) === false) {
-          throw new Error("取消");
+        if (
+          (await window.confirmDialog({
+            title: '新增',
+            content: '确定新增吗？',
+          })) === false
+        ) {
+          throw new Error('取消');
         }
       },
 
       async doCreateItem() {
         const { id, ...data } = this.addItem;
-        data.projectCreateAt = dayjs().format('YYYY-MM-DD HH:mm:ss')
-        data.projectMemberIdList = data.projectMemberIdList.join(',')
+        data.projectCreateAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
+        data.projectMemberIdList = data.projectMemberIdList.join(',');
 
-        await window.vtoast.loading("新增数据");
+        await window.vtoast.loading('新增数据');
         await window.jianghuAxios({
           data: {
             appData: {
@@ -638,15 +683,15 @@
               actionId: 'insertItem',
               actionData: data,
               bizIdGenerate: {
-                tableName: "project",
-                prefix: "XM",
-                type: "idSequence",
-                bizId: "projectId",
+                tableName: 'project',
+                prefix: 'XM',
+                type: 'idSequence',
+                bizId: 'projectId',
               },
-            }
-          }
-        })
-        await window.vtoast.success("新增数据成功");
+            },
+          },
+        });
+        await window.vtoast.success('新增数据成功');
       },
 
       async closeDrawerShow() {
@@ -657,7 +702,7 @@
       /**
        * uiActionId:  startUpdateItem
        * description: ✅获取表格数据
-      */
+       */
       async prepareItemData({ item }) {
         this.editItem = { ...item };
       },
@@ -669,71 +714,90 @@
       /**
        * uiActionId:  updateItem
        * description: ✅获取表格数据
-      */
+       */
       async confirmUpdateItemDialog(text = '修改') {
-        if (await window.confirmDialog({ title: text, content: `确定${text}吗？` }) === false) {
-          throw new Error("取消");
+        if (
+          (await window.confirmDialog({
+            title: text,
+            content: `确定${text}吗？`,
+          })) === false
+        ) {
+          throw new Error('取消');
         }
       },
 
       async doUpdateItem() {
-        const { id, totalTasks, notStartedTasks, inProgressTasks, completedTasks, ...data } = this.editItem;
-        data.projectMemberIdList = data.projectMemberIdList.join(',')
+        const {
+          id,
+          totalTasks,
+          notStartedTasks,
+          inProgressTasks,
+          completedTasks,
+          ...data
+        } = this.editItem;
+        data.projectMemberIdList = data.projectMemberIdList.join(',');
 
-        await window.vtoast.loading("修改数据");
+        await window.vtoast.loading('修改数据');
         await window.jianghuAxios({
           data: {
             appData: {
               pageId: 'projectManagement',
               actionId: 'updateItem',
               actionData: data,
-              where: { id }
-            }
-          }
-        })
-        await window.vtoast.success("修改数据成功");
+              where: { id },
+            },
+          },
+        });
+        await window.vtoast.success('修改数据成功');
       },
 
       /**
        * uiActionId:  deleteItem
        * description: ✅获取表格数据
-      */
+       */
       async confirmDeleteItemDialog() {
-        if (await window.confirmDialog({ title: "删除", content: "确定删除吗？" }) === false) {
-          throw new Error("取消");
+        if (
+          (await window.confirmDialog({
+            title: '删除',
+            content: '确定删除吗？',
+          })) === false
+        ) {
+          throw new Error('取消');
         }
       },
 
       async doDeleteItem({ item }) {
         const { id } = item;
-        await window.vtoast.loading("删除数据");
+        await window.vtoast.loading('删除数据');
         await window.jianghuAxios({
           data: {
             appData: {
               pageId: 'projectManagement',
               actionId: 'deleteItem',
               actionData: {},
-              where: { id: id }
-            }
-          }
+              where: { id: id },
+            },
+          },
         });
-        await window.vtoast.success("删除数据成功");
+        await window.vtoast.success('删除数据成功');
       },
 
       /**
        * uiActionId:  doRedirect
        * description: ✅获取表格数据
-      */
+       */
       async doRedirect({ item, button }) {
         // todo：请在生成后将下列的 title 参数改成获取你要展示的字段，如 className
         if (button.path.startsWith('http')) {
-          window.location.href = `${button.path}?projectId=${item.projectId}&title=${item.projectId}`
+          window.location.href = `${button.path}?projectId=${item.projectId}&title=${item.projectId}`;
         } else {
-          window.location.href = `/${window.appInfo.appId}/page/${button.path}?projectId=${item.projectId}&title=${item.projectId}`
+          window.location.href = `/${window.appInfo.appId}/page/${button.path}?projectId=${item.projectId}&title=${item.projectId}`;
         }
       },
       getConstantCollectionItemText(key, _value) {
-        const constantCollectionItemFind = this.constantCollection[key].find(({ value }) => value === _value);
+        const constantCollectionItemFind = this.constantCollection[key].find(
+          ({ value }) => value === _value
+        );
         if (constantCollectionItemFind) {
           return constantCollectionItemFind.text;
         }
@@ -743,43 +807,49 @@
         this.currentSceneId = funObj.id;
         this.serverSearchInput = _.cloneDeep({
           ...this.serverSearchInput,
-          ...funObj.form
+          ...funObj.form,
         });
       },
 
       // ---------- 回收站 >>>>>>>>>>>>> ----------
       async deleteProject({ item }) {
         const { id } = item;
-        await window.vtoast.loading("放入回收站");
+        await window.vtoast.loading('放入回收站');
         await window.jianghuAxios({
           data: {
             appData: {
               pageId: 'projectManagement',
               actionId: 'updateItem',
-              actionData: { isDelete: '是', projectDeleteAt: dayjs().format('YYYY-MM-DD HH:mm:ss') },
-              where: { id: id }
-            }
-          }
+              actionData: {
+                isDelete: '是',
+                projectDeleteAt: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+              },
+              where: { id: id },
+            },
+          },
         });
-        await window.vtoast.success("放入回收站成功");
+        await window.vtoast.success('放入回收站成功');
       },
       // ---------- <<<<<<<<<<<<< 回收站 ----------
 
       // ---------- 归档 >>>>>>>>>>>>> ----------
       async archiveProject({ item }) {
         const { id } = item;
-        await window.vtoast.loading("归档中...");
+        await window.vtoast.loading('归档中...');
         await window.jianghuAxios({
           data: {
             appData: {
               pageId: 'projectManagement',
               actionId: 'updateItem',
-              actionData: { isArchive: '是', projectArchiveAt: dayjs().format('YYYY-MM-DD HH:mm:ss') },
-              where: { id: id }
-            }
-          }
+              actionData: {
+                isArchive: '是',
+                projectArchiveAt: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+              },
+              where: { id: id },
+            },
+          },
         });
-        await window.vtoast.success("归档成功");
+        await window.vtoast.success('归档成功');
       },
       // ---------- <<<<<<<<<<<<< 归档 ----------
 
@@ -787,23 +857,23 @@
       async starProject({ item }) {
         const { id } = item;
 
-        item.isMark = item.isMark == '是' ? '否' : '是'
-        await window.vtoast.loading("操作中...");
+        item.isMark = item.isMark == '是' ? '否' : '是';
+        await window.vtoast.loading('操作中...');
         await window.jianghuAxios({
           data: {
             appData: {
               pageId: 'projectManagement',
               actionId: 'updateItem',
               actionData: { isMark: item.isMark },
-              where: { id: id }
-            }
-          }
+              where: { id: id },
+            },
+          },
         });
-        await window.vtoast.success("操作成功");
+        await window.vtoast.success('操作成功');
       },
       // ---------- <<<<<<<<<<<<< 加星标 ----------
-    }
-  })
+    },
+  });
 </script>
 
 <style scoped>

@@ -5,21 +5,10 @@
     <v-row class="justify-space-between align-center pa-4" no-gutters>
       <span class="text-h7 font-weight-bold">任务详情</span>
       <div>
-        <v-menu offset-y>
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn small v-bind="attrs" v-on="on">
-              <v-icon size="16">mdi-dots-horizontal</v-icon>
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item @click="doUiAction('updateTask')">
-              <v-list-item-title>保存</v-list-item-title>
-            </v-list-item>
-            <v-list-item @click="doUiAction('deleteTask')">
-              <v-list-item-title>删除</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
+
+        <v-btn :disabled="isLoading" @click="doUiAction('updateTask')" class="ml-2" color="primary" small>保存</v-btn>
+        <v-btn :disabled="isLoading" @click="doUiAction('deleteTask')" class="ml-2" color="error" small>删除</v-btn>
+
       </div>
     </v-row>
     <v-divider class="jh-divider"></v-divider>
@@ -32,14 +21,14 @@
       <v-row class="ma-0">
 
         <v-col cols="12" sm="12" md="4" xl="3">
-          <span class="inputLabel"><span class="red--text">*</span>任务名称</span>
+          <span class="jh-input-label"><span class="red--text">*</span>任务名称</span>
           <v-text-field :rules="requireRules" class="jh-v-input " dense filled single-line
             v-model="detail.taskTitle"></v-text-field>
         </v-col>
         <v-col cols="12" sm="12" md="4" xl="3">
-          <span class="inputLabel">任务标签</span>
+          <span class="jh-input-label">任务标签</span>
           <v-combobox v-model="detail.taskTag" :items="[]" multiple chips deletable-chips class="jh-v-input " dense
-            filled single-line small>
+            filled single-line small hide-actions hide-controls hide-details>
             <template v-slot:selection="data">
               <v-chip small>{{data.item}}</v-chip>
             </template>
@@ -47,19 +36,19 @@
         </v-col>
 
         <v-col cols="12" sm="12" md="12" xl="12">
-          <span class="inputLabel">任务内容</span>
+          <span class="jh-input-label">任务内容</span>
 
           <div id="editorMdContainer" class="mb-0">
-            <textarea style="display:none;">{{ detail.taskContent }}</textarea>
+            <textarea placeholder="输入内容" style="display:none;">{{ detail.taskContent }}</textarea>
           </div>
         </v-col>
 
         <v-col cols="12" sm="12" md="4" xl="3">
-          <span class="inputLabel">开始时间</span>
+          <span class="jh-input-label">开始时间</span>
           <v-menu v-model="isStartAtMenuShown" :close-on-content-click="false" :nudge-right="40"
             transition="scale-transition" offset-y min-width="auto">
             <template v-slot:activator="{ on, attrs }">
-              <v-text-field append-icon="mdi-calendar" class="jh-v-input" dense single-line filled
+              <v-text-field class="jh-v-input" dense single-line filled
                 v-model="detail.taskStartAt" v-bind="attrs" v-on="on"></v-text-field>
             </template>
             <v-date-picker v-model="detail.taskStartAt" no-title scrollable></v-date-picker>
@@ -67,11 +56,11 @@
         </v-col>
 
         <v-col cols="12" sm="12" md="4" xl="3">
-          <span class="inputLabel">结束时间</span>
+          <span class="jh-input-label">结束时间</span>
           <v-menu v-model="isEndAtMenuShown" :close-on-content-click="false" :nudge-right="40"
             transition="scale-transition" offset-y min-width="auto">
             <template v-slot:activator="{ on, attrs }">
-              <v-text-field append-icon="mdi-calendar" class="jh-v-input" dense single-line filled
+              <v-text-field class="jh-v-input" dense single-line filled
                 v-model="detail.taskEndAt" v-bind="attrs" v-on="on"></v-text-field>
             </template>
             <v-date-picker v-model="detail.taskEndAt" no-title scrollable></v-date-picker>
@@ -79,35 +68,35 @@
         </v-col>
 
         <v-col cols="12" sm="12" md="4" xl="3">
-          <span class="inputLabel">优先级</span>
+          <span class="jh-input-label">优先级</span>
           <v-autocomplete :items="constantObj.taskLevel" class="jh-v-input" dense single-line filled
             v-model="detail.taskLevel"></v-autocomplete>
         </v-col>
 
         <v-col cols="12" sm="12" md="4" xl="3">
-          <span class="inputLabel">处理人</span>
+          <span class="jh-input-label">处理人</span>
           <v-autocomplete :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense single-line
             filled v-model="detail.taskManagerId"></v-autocomplete>
         </v-col>
         <v-col cols="12" sm="12" md="4" xl="3">
-          <span class="inputLabel">状态</span>
+          <span class="jh-input-label">状态</span>
           <v-autocomplete :items="constantObj.taskStatus" class="jh-v-input" dense single-line filled
             v-model="detail.taskStatus"></v-autocomplete>
         </v-col>
 
         <v-col cols="12" sm="12" md="12">
-          <span class="inputLabel">子任务</span>
+          <span class="jh-input-label">子任务</span>
 
           <task-child-list :todos.sync="detail.taskChildList"></task-child-list>
         </v-col>
         <v-col cols="12" sm="12" md="12">
-          <span class="inputLabel">附件</span>
+          <span class="jh-input-label">附件</span>
 
           <task-attachment-list :files.sync="detail.taskFileList"></task-attachment-list>
         </v-col>
 
         <v-col cols="12" sm="12" md="12">
-          <span class="inputLabel">评论</span>
+          <span class="jh-input-label">评论</span>
           <task-comment-list :comments.sync="detail.taskCommentList" @confirm="postComment" />
         </v-col>
       </v-row>
@@ -169,7 +158,7 @@
             await this.close();
             break;
           case 'deleteTask':
-            await this.confirmDeleteItemDialog();
+            await this.confirmUpdateItemDialog('删除');
             await this.deleteTask(uiActionData);
             await this.close();
             break;
@@ -206,8 +195,8 @@
         this.detail = rows[0] || {}
       },
       // ---------- 更新task >>>>>>>>>>>>> ----------
-      async confirmUpdateItemDialog() {
-        if (await window.confirmDialog({ title: "修改", content: "确定修改吗？" }) === false) {
+      async confirmUpdateItemDialog(text='修改') {
+        if (await window.confirmDialog({ title: text, content: `确定${text}吗？` }) === false) {
           throw new Error("取消");
         }
       },
@@ -246,11 +235,7 @@
       // ---------- <<<<<<<<<<<<< 更新task ----------
 
       // ---------- 删除task >>>>>>>>>>>>> ----------
-      async confirmDeleteItemDialog() {
-        if (await window.confirmDialog({ title: "确认将任删除？" }) === false) {
-          throw new Error("取消");
-        }
-      },
+   
       async deleteTask() {
         const { id, ...data } = this.detail
 
@@ -279,6 +264,7 @@
           height: 300,
           watch: false,
           saveHTMLToTextarea: true,    // 保存 HTML 到 Textarea
+          placeholder: '输入内容',
           path: '/<$ ctx.app.config.appId $>/public/plugins/editor.md/lib/',
           onchange: function (val) {
             console.log('editorMdContainer:', val);
@@ -307,5 +293,7 @@
   })
 </script>
 <style scoped>
-
+.v-select.v-select--chips.v-input--dense .v-select__selections {
+  min-height: auto;
+}
 </style>

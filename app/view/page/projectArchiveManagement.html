@@ -48,9 +48,26 @@
                               {{ item.operationAt && dayjs(item.operationAt).format('YYYY-MM-DD HH:mm:ss') }}
                             </template>
                             <template v-slot:item.action="{ item }">
-                              <v-btn v-for="tableButton of tableButtonList" :color="tableButton.color" outlined x-small class="elevation-0 mr-2" @click="doUiAction(tableButton.action, {item, button: tableButton})">{{ tableButton.text }}</v-btn>
-
-
+                              <template v-for="tableButton of tableButtonList">
+                                <v-menu v-if="tableButton.text=='操作'" offset-y>
+                                  <template v-slot:activator="{ on, attrs }">
+                                    <span role="button" :class="`${tableButton.color}--text jh-font-size-3 pr-2`" v-bind="attrs" v-on="on">
+                                      <v-icon size="14" :class="`${tableButton.color}--text`">{{tableButton.icon}}</v-icon>{{tableButton.text}}
+                                    </span>
+                                  </template>
+                                  <v-list>
+                                    <v-list-item
+                                    v-for="moreButton in tableButton.list"
+                                    @click="doUiAction(moreButton.action, { item, text: moreButton.text })">
+                                      <v-list-item-title>{{moreButton.text}}</v-list-item-title>
+                                    </v-list-item>
+                                  </v-list>
+                                </v-menu>
+  
+                                <span v-else role="button" :class="`${tableButton.color}--text jh-font-size-3 pr-2`" @click="doUiAction(tableButton.action, {item, button: tableButton})">
+                                  <v-icon size="14" :class="`${tableButton.color}--text`" v-if="tableButton.icon">{{tableButton.icon}}</v-icon>{{tableButton.text}}
+                                </span>
+                              </template>
                             </template>
                             <!--没有数据-->
                             <template v-slot:loading>
@@ -152,7 +169,7 @@
       ],
 
       tableButtonList: [
-        { text: '恢复项目', buttonType: 'recover', color: 'blue', action: 'recoverProject' },
+        { text: '恢复项目', icon: 'mdi-lock-reset', buttonType: 'recover', color: 'blue', action: 'recoverProject' },
       ],
 
       isProjectEndAtMenuShown: false,

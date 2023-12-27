@@ -2,10 +2,13 @@
   <div>
     <!-- 评论框 -->
     <div class="d-flex">
-      <v-avatar color="primary" size="25" class="mr-2"></v-avatar>
+      <v-avatar color="primary" size="25" class="mr-2">
+        <span class="white--text font-weight-bold">{{username[0]}}</span>
+      </v-avatar>
+
       <div class="flex-grow-1 right-content px-4 py-2 text-right">
         <textarea v-model="newComment" style="width: 100%; outline: none;" :counter="2000" @focus="expandInput"></textarea>
-        <v-btn small v-if="isInputExpanded" @click="postComment">评论</v-btn>
+        <v-btn color="primary" small v-if="isInputExpanded" @click="postComment">评论</v-btn>
         <v-btn small v-if="isInputExpanded" @click="cancelComment">取消</v-btn>
       </div>
     </div>
@@ -13,7 +16,9 @@
     <!-- 评论列表 -->
     <div class="comment-list mt-4">
       <div class="comment-list-item d-flex" v-for="comment in reversedComments" :key="comment.id">
-        <v-avatar color="primary" size="25" class="mr-2"></v-avatar>
+        <v-avatar color="primary" size="25" class="mr-2">
+          <span class="white--text font-weight-bold">{{comment.username[0]}}</span>
+        </v-avatar>
         <div class="right-content pa-4">
           <div class="content font-weight-bold">{{ comment.content }}</div>
           <div class="bottom-content">
@@ -43,6 +48,7 @@
     data: () => ({
       newComment: '',
       isInputExpanded: false,
+      username: userInfo.username
     }),
     mounted() {
       dayjs.extend(dayjs_plugin_relativeTime);

@@ -275,12 +275,12 @@
               <!--抽屉表单-->
               <v-row class="ma-0">
                 <v-col cols="12" sm="12" md="4" xl="3">
-                  <span class="inputLabel"><span class="red--text">*</span>任务名称</span>
+                  <span class="jh-input-label"><span class="red--text">*</span>任务名称</span>
                   <v-text-field :rules="requireRules" class="jh-v-input " dense filled single-line v-model="addItem.taskTitle"></v-text-field>
                 </v-col>
                  
                 <v-col cols="12" sm="12" md="12" xl="12">
-                  <span class="inputLabel">任务内容</span>
+                  <span class="jh-input-label">任务内容</span>
              
                   <div id="editorMdContainer" class="mb-0">
                     <textarea style="display:none;">{{ addItem.taskContent }}</textarea>
@@ -288,7 +288,7 @@
                 </v-col>
 
                 <v-col cols="12" sm="12" md="4" xl="3">
-                  <span class="inputLabel">开始时间</span>
+                  <span class="jh-input-label">开始时间</span>
                   <v-menu 
                     v-model="isStartAtMenuShown" 
                     :close-on-content-click="false"
@@ -299,7 +299,7 @@
                   >
                     <template v-slot:activator="{ on, attrs }">
                       <v-text-field 
-                        append-icon="mdi-calendar" 
+                        
                         class="jh-v-input" 
                         dense 
                         single-line 
@@ -314,7 +314,7 @@
                 </v-col>
                  
                 <v-col cols="12" sm="12" md="4" xl="3">
-                  <span class="inputLabel">结束时间</span>
+                  <span class="jh-input-label">结束时间</span>
                   <v-menu 
                     v-model="isEndAtMenuShown" 
                     :close-on-content-click="false"
@@ -325,7 +325,7 @@
                   >
                     <template v-slot:activator="{ on, attrs }">
                       <v-text-field 
-                        append-icon="mdi-calendar" 
+                        
                         class="jh-v-input" 
                         dense 
                         single-line 
@@ -340,29 +340,29 @@
                 </v-col>
                  
                 <v-col cols="12" sm="12" md="4" xl="3">
-                  <span class="inputLabel">优先级</span>
+                  <span class="jh-input-label">优先级</span>
                   <v-autocomplete :items="constantObj.taskLevel" class="jh-v-input" dense single-line filled v-model="addItem.taskLevel"></v-autocomplete>
                 </v-col>
 
                 <v-col cols="12" sm="12" md="4" xl="3">
-                  <span class="inputLabel">处理人</span>
+                  <span class="jh-input-label">处理人</span>
                   <v-autocomplete :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense single-line filled v-model="addItem.taskManagerId"></v-autocomplete>
                 </v-col>
                  
                 <v-col cols="12" sm="12" md="4" xl="3">
-                  <span class="inputLabel">团队成员</span>
+                  <span class="jh-input-label">团队成员</span>
                   <v-autocomplete multiple :items="userList" class="jh-v-input" item-text="username" item-value="userId" dense single-line filled v-model="addItem.taskMemberIdList"></v-autocomplete>
                 </v-col>
 
                 <v-col cols="12" sm="12" md="4" xl="3">
-                  <span class="inputLabel">状态</span>
+                  <span class="jh-input-label">状态</span>
                   <v-autocomplete :items="constantObj.taskStatus" class="jh-v-input" dense single-line filled v-model="addItem.taskStatus"></v-autocomplete>
                 </v-col>
               </v-row>
               <!--抽屉操作按钮-->
-              <v-row class="mx-0 justify-end mt-4">
+              <v-row class="mx-0 justify-end mt-4 px-2">
+                <v-btn class="elevation-0 mr-2" @click="isAddDrawerShow = false" small>取消</v-btn>
                 <v-btn color="success" @click="doUiAction('createItem')" small>保存</v-btn>
-                <v-btn class="elevation-0 ml-2" @click="isAddDrawerShow = false" small>取消</v-btn>
               </v-row>
             </v-form>
             <!--抽屉关闭按钮-->
@@ -388,20 +388,24 @@
             </template>
 
             <v-card>
-              <v-card-title class="text-h5 grey lighten-2">
+              <v-card-title>
                 新建公告
               </v-card-title>
 
               <v-card-text>
                 <v-form>
-                  <span class="inputLabel"><span class="red--text">*</span>公告内容</span>
                  <v-textarea :rules="requireRules" v-model="affiche" class="jh-v-input" dense filled single-line></v-textarea>
                 </v-form>
               </v-card-text>
 
-              <v-divider></v-divider>
               <v-card-actions>
                 <v-spacer></v-spacer>
+                <v-btn
+                  text
+                  @click="isAddAfficheDialogShown=false"
+                >
+                  取消
+                </v-btn>
                 <v-btn
                   color="primary"
                   text
